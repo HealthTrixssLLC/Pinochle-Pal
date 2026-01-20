@@ -39,7 +39,32 @@ export interface GameState {
   createdAt: number;
 }
 
-// Logic Helpers
+// Meld Definitions
+export interface MeldType {
+  id: string;
+  label: string;
+  points: number;
+  icon?: string; // Emoji or Lucide icon name
+  group: 'class-a' | 'class-b' | 'class-c';
+}
+
+export const MELD_TYPES: MeldType[] = [
+  // Class A (Suits)
+  { id: 'run', label: 'Run', points: 150, group: 'class-a', icon: '🏃' },
+  { id: 'royal-marriage', label: 'Royal Marriage', points: 40, group: 'class-a', icon: '👑' },
+  { id: 'common-marriage', label: 'Common Marriage', points: 20, group: 'class-a', icon: '💍' },
+  { id: 'dix', label: 'Dix (9 of Trump)', points: 10, group: 'class-a', icon: '9️⃣' },
+  
+  // Class B (Numbers)
+  { id: 'aces-around', label: 'Aces Around', points: 100, group: 'class-b', icon: '🅰️' },
+  { id: 'kings-around', label: 'Kings Around', points: 80, group: 'class-b', icon: '🤴' },
+  { id: 'queens-around', label: 'Queens Around', points: 60, group: 'class-b', icon: '👸' },
+  { id: 'jacks-around', label: 'Jacks Around', points: 40, group: 'class-b', icon: '👶' },
+
+  // Class C (Special)
+  { id: 'pinochle', label: 'Pinochle', points: 40, group: 'class-c', icon: '🃏' },
+  { id: 'double-pinochle', label: 'Double Pinochle', points: 300, group: 'class-c', icon: '🎭' },
+];
 
 export const calculateRoundScores = (
   type: GameType,
@@ -58,36 +83,55 @@ export const calculateRoundScores = (
   }
 
   // Check if bidder made their bid
-  const bidderTotal = scores[bidderIndex];
+  // In 4-handed partnership, we need to sum the team's score to check against bid
+  let bidderScoreToCheck = scores[bidderIndex];
   
-  // In partnership (4-handed), usually the partner's score counts towards the bid?
-  // User asked for "4 handed pinochle", usually implies partnership.
-  // "Forehanded" in prompt likely typo for "Four handed".
-  // Standard rule: Bidder needs (Meld + Tricks) >= Bid.
-  
-  if (bidderTotal < bidAmount) {
-    wentSet = true;
-    // If set, score is usually -BidAmount.
-    // Meld is lost? Rules vary. Standard: If bid fails, entire score for that hand is subtracted?
-    // "Single Deck Partnership Pinochle": If bid fails, the amount of the bid is subtracted from the bidding side's score. They get no credit for tricks or meld.
-    scores[bidderIndex] = -bidAmount;
+  if (type === '4-handed') {
+     // Identify partner index
+     // If bidder is 0 (Team 1), partner is 2.
+     // If bidder is 1 (Team 2), partner is 3.
+     // If bidder is 2 (Team 1), partner is 0.
+     // If bidder is 3 (Team 2), partner is 1.
+     const partnerIndex = (bidderIndex + 2) % 4;
+     bidderScoreToCheck = scores[bidderIndex] + scores[partnerIndex];
   }
 
-  // Partnership handling would happen at the game level (summing indices 0+2 and 1+3), 
-  // but for raw round calculation, we return individual/team index scores.
-  // If 4-handed, we assume inputs are already combined per team? 
-  // Let's assume the UI handles "Team A" and "Team B" inputs for 4-handed.
-  
+  if (bidderScoreToCheck < bidAmount) {
+    wentSet = true;
+    
+    // Calculate penalty
+    // 4-handed: Subtract bid amount from the TEAM score.
+    // 3-handed/2-handed: Subtract bid amount from PLAYER score.
+    
+    // Implementation:
+    // We modify the scores array directly.
+    // However, the `scores` array currently holds individual totals (meld + tricks).
+    // If set, the team gets 0 points for meld/tricks, and loses the bid amount.
+    
+    if (type === '4-handed') {
+        const partnerIndex = (bidderIndex + 2) % 4;
+        // Reset both partners to 0 first (they lose meld/tricks)
+        // Wait, rule variations exist. Standard: "If the bidding side fails to make the bid, the amount of the bid is subtracted from their score. They receive no credit for any melds or tricks won."
+        scores[bidderIndex] = 0;
+        scores[partnerIndex] = 0;
+        
+        // Apply penalty to the bidder's slot (so it sums correctly later)
+        // Or split it? Usually applied to the team total.
+        // Let's apply -Bid to the bidder, and 0 to partner. 
+        // When summed for team display, it will be correct (-Bid + 0 = -Bid).
+        scores[bidderIndex] = -bidAmount;
+    } else {
+        // Individual play
+        scores[bidderIndex] = -bidAmount;
+    }
+  }
+
   return { scores, wentSet };
 };
 
 export const SUITS: { value: Suit; label: string; symbol: string; color: string }[] = [
   { value: 'hearts', label: 'Hearts', symbol: '♥', color: 'text-red-500' },
-  { value: 'diamonds', label: 'Diamonds', symbol: '♦', color: 'text-blue-500' }, // Standard US decks sometimes use blue/orange, but let's stick to standard Red for now, or maybe Orange for Diamonds to distinguish? 
-  // Actually, standard pinochle: H/D red, S/C black.
-  // Let's use standard colors.
+  { value: 'diamonds', label: 'Diamonds', symbol: '♦', color: 'text-blue-500' }, 
   { value: 'clubs', label: 'Clubs', symbol: '♣', color: 'text-slate-900 dark:text-slate-100' },
   { value: 'spades', label: 'Spades', symbol: '♠', color: 'text-slate-900 dark:text-slate-100' },
 ];
-
-// Override for diamond color if desired, standard is red.

@@ -1,11 +1,14 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { useStore } from "@/lib/store";
-import { Layout, Header } from "@/components/layout";
+import { Layout } from "@/components/layout";
 import { Button } from "@/components/ui/button";
-import { SUITS, Suit } from "@/lib/game-logic";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { SUITS, Suit, MELD_TYPES } from "@/lib/game-logic";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check, ChevronRight, ChevronLeft } from "lucide-react";
+import { Check, ChevronRight, ChevronLeft, Calculator, X } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export default function RoundWizard() {
   const [, setLocation] = useLocation();
@@ -14,17 +17,19 @@ export default function RoundWizard() {
 
   if (!activeGame) return null;
 
+  const isTeamGame = activeGame.config.type === '4-handed';
+
   // Local state for the round
   const [bidderIndex, setBidderIndex] = useState<number>(0);
-  const [bidAmount, setBidAmount] = useState<string>("250"); // String for keypad input
+  const [bidAmount, setBidAmount] = useState<string>("250"); 
   const [trumpSuit, setTrumpSuit] = useState<Suit>("spades");
   
-  // Scores state
-  // We need to store Meld and Tricks for each player/team.
-  // Even in team mode, we can input per team? 
-  // Let's stick to per-player input for flexibility, but group them visually if team.
   const [meldScores, setMeldScores] = useState<number[]>(new Array(activeGame.config.playerIds.length).fill(0));
   const [trickScores, setTrickScores] = useState<number[]>(new Array(activeGame.config.playerIds.length).fill(0));
+
+  // Meld Calculator State
+  const [activeMeldPlayerIdx, setActiveMeldPlayerIdx] = useState<number | null>(null);
+  const [meldCounts, setMeldCounts] = useState<Record<string, number>>({}); 
 
   const getPlayerName = (idx: number) => {
     const id = activeGame.config.playerIds[idx];
@@ -46,6 +51,41 @@ export default function RoundWizard() {
       tricks: trickScores
     });
     setLocation("/game");
+  };
+
+  // Meld Logic
+  const openMeldCalculator = (playerIdx: number) => {
+    setActiveMeldPlayerIdx(playerIdx);
+    setMeldCounts({}); // Reset temporary counts
+  };
+
+  const addMeldItem = (meldId: string, points: number) => {
+     setMeldCounts(prev => ({
+        ...prev,
+        [meldId]: (prev[meldId] || 0) + 1
+     }));
+  };
+
+  const removeMeldItem = (meldId: string) => {
+     setMeldCounts(prev => ({
+        ...prev,
+        [meldId]: 0 // "X to clear it out" as requested
+     }));
+  };
+
+  const confirmMeldCalc = () => {
+    if (activeMeldPlayerIdx === null) return;
+    
+    let total = 0;
+    Object.entries(meldCounts).forEach(([id, count]) => {
+       const type = MELD_TYPES.find(m => m.id === id);
+       if (type) total += type.points * count;
+    });
+
+    const newMelds = [...meldScores];
+    newMelds[activeMeldPlayerIdx] = total;
+    setMeldScores(newMelds);
+    setActiveMeldPlayerIdx(null);
   };
 
   // Numpad Component
@@ -153,34 +193,45 @@ export default function RoundWizard() {
                  initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
                  className="space-y-6"
               >
-                 {activeGame.config.playerIds.map((id, idx) => (
-                    <div key={id} className="bg-white/5 rounded-lg p-4 border border-white/10">
+                 {activeGame.config.playerIds.map((id, idx) => {
+                    // Group Check for 4-handed UI simplification? 
+                    // Actually per-player input is still safest to avoid confusion.
+                    // But maybe we can label them "Team 1 - Player 1"
+                    
+                    let teamLabel = "";
+                    if (isTeamGame) {
+                        const teamNum = (idx % 2) + 1;
+                        teamLabel = `Team ${teamNum}`;
+                    }
+
+                    return (
+                    <div key={id} className={`bg-white/5 rounded-lg p-4 border ${idx === bidderIndex ? 'border-primary/50' : 'border-white/10'}`}>
                        <div className="flex justify-between items-center mb-4">
-                          <span className="font-bold text-lg flex items-center gap-2">
-                            {getPlayerName(idx)}
-                            {idx === bidderIndex && <span className="text-[10px] bg-primary text-primary-foreground px-2 py-0.5 rounded-full uppercase">Bidder</span>}
-                          </span>
+                          <div className="flex flex-col">
+                              {teamLabel && <span className="text-[10px] text-muted-foreground uppercase">{teamLabel}</span>}
+                              <span className="font-bold text-lg flex items-center gap-2">
+                                {getPlayerName(idx)}
+                                {idx === bidderIndex && <span className="text-[10px] bg-primary text-primary-foreground px-2 py-0.5 rounded-full uppercase">Bidder</span>}
+                              </span>
+                          </div>
                        </div>
                        
                        <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <label className="text-xs text-muted-foreground uppercase">Meld</label>
-                            <input 
-                              type="number" 
-                              pattern="[0-9]*"
-                              inputMode="numeric"
-                              className="w-full bg-black/20 border border-white/10 rounded p-3 text-xl font-mono focus:border-primary outline-none"
-                              value={meldScores[idx] || ""}
-                              onChange={(e) => {
-                                 const newMelds = [...meldScores];
-                                 newMelds[idx] = parseInt(e.target.value) || 0;
-                                 setMeldScores(newMelds);
-                              }}
-                              placeholder="0"
-                            />
+                            <label className="text-xs text-muted-foreground uppercase flex items-center gap-2 mb-1">
+                                Meld
+                                <span className="text-[10px] bg-white/10 px-1 rounded text-white/50">Tap to Calc</span>
+                            </label>
+                            <button 
+                               onClick={() => openMeldCalculator(idx)}
+                               className="w-full bg-black/20 border border-white/10 rounded p-3 text-xl font-mono text-left flex justify-between items-center hover:bg-white/5 active:bg-white/10 transition-colors"
+                            >
+                               {meldScores[idx] || "0"}
+                               <Calculator className="h-4 w-4 text-primary opacity-50" />
+                            </button>
                           </div>
                           <div>
-                            <label className="text-xs text-muted-foreground uppercase">Tricks</label>
+                            <label className="text-xs text-muted-foreground uppercase mb-1 block">Tricks</label>
                             <input 
                               type="number"
                               pattern="[0-9]*"
@@ -197,7 +248,7 @@ export default function RoundWizard() {
                           </div>
                        </div>
                     </div>
-                 ))}
+                 )})}
                  
                  <div className="text-center text-sm text-muted-foreground">
                     Total Trick Points: {trickScores.reduce((a,b) => a+b, 0)} (Should be ~250)
@@ -225,6 +276,83 @@ export default function RoundWizard() {
              </Button>
            </div>
         </div>
+
+        {/* Meld Calculator Dialog/Sheet */}
+        <Dialog open={activeMeldPlayerIdx !== null} onOpenChange={(open) => !open && setActiveMeldPlayerIdx(null)}>
+           <DialogContent className="h-[80vh] flex flex-col p-0 gap-0 bg-background border-white/10">
+              <DialogHeader className="p-4 border-b border-white/10 bg-black/20">
+                 <DialogTitle className="flex justify-between items-center">
+                    <span>Calculate Meld</span>
+                    <span className="text-sm font-normal text-muted-foreground">
+                        {activeMeldPlayerIdx !== null && getPlayerName(activeMeldPlayerIdx)}
+                    </span>
+                 </DialogTitle>
+              </DialogHeader>
+              
+              <ScrollArea className="flex-1 p-4">
+                 <div className="space-y-6">
+                    {(['class-a', 'class-b', 'class-c'] as const).map(group => (
+                        <div key={group}>
+                            <h4 className="text-xs uppercase text-primary font-bold mb-3 tracking-wider">
+                                {group === 'class-a' ? 'Runs & Marriages' : group === 'class-b' ? 'Arounds' : 'Special'}
+                            </h4>
+                            <div className="grid grid-cols-2 gap-3">
+                                {MELD_TYPES.filter(m => m.group === group).map(meld => {
+                                    const count = meldCounts[meld.id] || 0;
+                                    return (
+                                        <button 
+                                            key={meld.id}
+                                            onClick={() => addMeldItem(meld.id, meld.points)}
+                                            className={`
+                                                relative p-3 rounded-xl border text-left transition-all
+                                                ${count > 0 ? 'bg-primary/20 border-primary' : 'bg-white/5 border-white/10 hover:bg-white/10'}
+                                            `}
+                                        >
+                                            <div className="flex justify-between items-start mb-1">
+                                                <span className="text-2xl">{meld.icon}</span>
+                                                {count > 0 && (
+                                                    <div 
+                                                        onClick={(e) => { e.stopPropagation(); removeMeldItem(meld.id); }}
+                                                        className="bg-black/40 hover:bg-red-500/80 rounded-full p-1 -mr-1 -mt-1 transition-colors"
+                                                    >
+                                                        <X className="h-3 w-3" />
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div className="font-bold text-sm leading-tight">{meld.label}</div>
+                                            <div className="text-xs text-muted-foreground mt-1">{meld.points} pts</div>
+                                            
+                                            {count > 0 && (
+                                                <div className="absolute top-2 right-8 bg-primary text-primary-foreground text-xs font-bold px-2 py-0.5 rounded-full">
+                                                    x{count}
+                                                </div>
+                                            )}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    ))}
+                 </div>
+              </ScrollArea>
+
+              <div className="p-4 border-t border-white/10 bg-black/20 safe-area-bottom">
+                 <div className="flex justify-between items-center mb-4 px-2">
+                    <span className="text-sm text-muted-foreground">Total Meld</span>
+                    <span className="text-3xl font-mono font-bold text-primary">
+                        {Object.entries(meldCounts).reduce((acc, [id, count]) => {
+                            const type = MELD_TYPES.find(m => m.id === id);
+                            return acc + (type ? type.points * count : 0);
+                        }, 0)}
+                    </span>
+                 </div>
+                 <Button className="w-full h-12 text-lg font-serif" onClick={confirmMeldCalc}>
+                    Confirm Meld
+                 </Button>
+              </div>
+           </DialogContent>
+        </Dialog>
+
       </div>
     </Layout>
   );

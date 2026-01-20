@@ -7,20 +7,23 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Plus, Check } from "lucide-react";
+import { Plus, Check, ArrowUp, ArrowDown } from "lucide-react";
 
 export default function NewGame() {
   const [, setLocation] = useLocation();
   const { players, addPlayer, startGame } = useStore();
-  const [step, setStep] = useState(1);
   
   // Form State
   const [gameType, setGameType] = useState<"2-handed" | "3-handed" | "4-handed">("3-handed");
   const [selectedPlayers, setSelectedPlayers] = useState<string[]>([]);
   const [targetScore, setTargetScore] = useState("1000");
   const [newPlayerName, setNewPlayerName] = useState("");
+  
+  // Team Setup State (for 4-handed)
+  // We'll store this as just the ordered list of selectedPlayers.
+  // Index 0 & 2 = Team 1
+  // Index 1 & 3 = Team 2
 
   const handleAddPlayer = () => {
     if (newPlayerName.trim()) {
@@ -33,10 +36,18 @@ export default function NewGame() {
     if (selectedPlayers.includes(id)) {
       setSelectedPlayers(selectedPlayers.filter(p => p !== id));
     } else {
-      if (selectedPlayers.length < (gameType === "2-handed" ? 2 : gameType === "3-handed" ? 3 : 4)) {
+      const max = gameType === "2-handed" ? 2 : gameType === "3-handed" ? 3 : 4;
+      if (selectedPlayers.length < max) {
         setSelectedPlayers([...selectedPlayers, id]);
       }
     }
+  };
+  
+  const movePlayer = (fromIndex: number, toIndex: number) => {
+    const newOrder = [...selectedPlayers];
+    const item = newOrder.splice(fromIndex, 1)[0];
+    newOrder.splice(toIndex, 0, item);
+    setSelectedPlayers(newOrder);
   };
 
   const handleStart = () => {
@@ -44,19 +55,22 @@ export default function NewGame() {
       type: gameType,
       targetScore: parseInt(targetScore),
       playerIds: selectedPlayers,
-      teamMode: gameType === "4-handed" // Default to team mode for 4-handed
+      teamMode: gameType === "4-handed"
     });
     setLocation("/game");
   };
 
   const maxPlayers = gameType === "2-handed" ? 2 : gameType === "3-handed" ? 3 : 4;
   const isReady = selectedPlayers.length === maxPlayers;
+  const isTeamMode = gameType === "4-handed";
+
+  const getPlayerName = (id: string) => players.find(p => p.id === id)?.name || "Unknown";
 
   return (
     <Layout>
       <Header title="New Game" showBack />
       
-      <div className="p-6 space-y-8">
+      <div className="p-6 space-y-8 pb-24">
         
         {/* Step 1: Game Type */}
         <div className="space-y-3">
@@ -67,7 +81,7 @@ export default function NewGame() {
                 key={type}
                 onClick={() => {
                     setGameType(type);
-                    setSelectedPlayers([]); // Reset selection on change
+                    setSelectedPlayers([]); 
                 }}
                 className={`
                   flex flex-col items-center justify-center p-3 rounded-lg border-2 transition-all
@@ -84,7 +98,7 @@ export default function NewGame() {
         </div>
 
         {/* Step 2: Select Players */}
-        <div className="space-y-3 flex-1 flex flex-col min-h-0">
+        <div className="space-y-3">
           <div className="flex justify-between items-center">
             <Label className="text-lg text-primary">Select {maxPlayers} Players</Label>
             <span className="text-xs text-muted-foreground">{selectedPlayers.length}/{maxPlayers}</span>
@@ -103,7 +117,7 @@ export default function NewGame() {
             </Button>
           </div>
 
-          <ScrollArea className="h-48 rounded-md border border-white/10 bg-black/10 p-2">
+          <ScrollArea className="h-40 rounded-md border border-white/10 bg-black/10 p-2">
             <div className="space-y-2">
               {players.map((player) => {
                 const isSelected = selectedPlayers.includes(player.id);
@@ -131,6 +145,49 @@ export default function NewGame() {
             </div>
           </ScrollArea>
         </div>
+
+        {/* Step 2.5: Team Setup (4-Handed Only) */}
+        {isTeamMode && isReady && (
+           <div className="space-y-3 bg-white/5 p-4 rounded-lg border border-white/10">
+              <Label className="text-lg text-primary flex items-center gap-2">
+                 Team Configuration
+                 <span className="text-xs font-normal text-muted-foreground">(Drag to swap)</span>
+              </Label>
+              <p className="text-xs text-muted-foreground">Team 1: Players 1 & 3 • Team 2: Players 2 & 4</p>
+              
+              <div className="space-y-4 mt-4">
+                 <div className="space-y-2">
+                    <Label className="text-xs uppercase text-primary/80">Team 1</Label>
+                    <div className="grid grid-cols-2 gap-2">
+                       {[0, 2].map((idx) => (
+                          <div key={selectedPlayers[idx]} className="bg-black/40 p-3 rounded flex justify-between items-center group">
+                             <span>{getPlayerName(selectedPlayers[idx])}</span>
+                             <div className="flex flex-col gap-1 opacity-50 group-hover:opacity-100">
+                                {idx > 0 && <button onClick={() => movePlayer(idx, idx-1)}><ArrowUp className="h-3 w-3" /></button>}
+                                {idx < 3 && <button onClick={() => movePlayer(idx, idx+1)}><ArrowDown className="h-3 w-3" /></button>}
+                             </div>
+                          </div>
+                       ))}
+                    </div>
+                 </div>
+
+                 <div className="space-y-2">
+                    <Label className="text-xs uppercase text-primary/80">Team 2</Label>
+                    <div className="grid grid-cols-2 gap-2">
+                       {[1, 3].map((idx) => (
+                          <div key={selectedPlayers[idx]} className="bg-black/40 p-3 rounded flex justify-between items-center group">
+                             <span>{getPlayerName(selectedPlayers[idx])}</span>
+                             <div className="flex flex-col gap-1 opacity-50 group-hover:opacity-100">
+                                {idx > 0 && <button onClick={() => movePlayer(idx, idx-1)}><ArrowUp className="h-3 w-3" /></button>}
+                                {idx < 3 && <button onClick={() => movePlayer(idx, idx+1)}><ArrowDown className="h-3 w-3" /></button>}
+                             </div>
+                          </div>
+                       ))}
+                    </div>
+                 </div>
+              </div>
+           </div>
+        )}
 
         {/* Step 3: Target Score */}
         <div className="space-y-3">
