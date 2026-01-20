@@ -4,10 +4,10 @@ import { useStore } from "@/lib/store";
 import { Layout } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { SUITS, Suit, MELD_TYPES } from "@/lib/game-logic";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check, ChevronRight, ChevronLeft, Calculator, X } from "lucide-react";
+import { Check, ChevronRight, ChevronLeft, Calculator, X, AlertTriangle } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 export default function RoundWizard() {
@@ -31,6 +31,10 @@ export default function RoundWizard() {
   const [activeMeldPlayerIdx, setActiveMeldPlayerIdx] = useState<number | null>(null);
   const [meldCounts, setMeldCounts] = useState<Record<string, number>>({}); 
 
+  // Validation State
+  const [validationError, setValidationError] = useState<string | null>(null);
+  const [showValidationDialog, setShowValidationDialog] = useState(false);
+
   const getPlayerName = (idx: number) => {
     const id = activeGame.config.playerIds[idx];
     return players.find(p => p.id === id)?.name || `Player ${idx + 1}`;
@@ -39,7 +43,38 @@ export default function RoundWizard() {
   const handleNext = () => {
     if (step === "bid") setStep("trump");
     else if (step === "trump") setStep("scores");
-    else submitRound();
+    else validateAndSubmit();
+  };
+
+  const validateAndSubmit = () => {
+      // Validation Logic
+      const totalTricks = trickScores.reduce((a, b) => a + b, 0);
+      const warnings: string[] = [];
+
+      // 1. Trick Total Check (Standard is 250)
+      if (totalTricks !== 250) {
+          warnings.push(`Total trick points equal ${totalTricks}, but standard is 250.`);
+      }
+
+      // 2. Outlier Checks
+      // Meld > 400 is rare in single deck (Double Run + others? Double Run is 150+150=300? No, Double Run is 1500 in some, 150 in others? 
+      // In this app Run is 150. Double Run isn't explicitly in list, but Double Pinochle is 300.
+      // 400 is a safe "suspiciously high" threshold for warning.
+      if (meldScores.some(m => m > 500)) {
+          warnings.push("One or more players has an unusually high meld score (> 500).");
+      }
+      
+      // Tricks > 250 is impossible
+      if (trickScores.some(t => t > 250)) {
+          warnings.push("One player has > 250 trick points, which is impossible.");
+      }
+
+      if (warnings.length > 0) {
+          setValidationError(warnings.join("\n"));
+          setShowValidationDialog(true);
+      } else {
+          submitRound();
+      }
   };
 
   const submitRound = () => {
@@ -194,10 +229,6 @@ export default function RoundWizard() {
                  className="space-y-6"
               >
                  {activeGame.config.playerIds.map((id, idx) => {
-                    // Group Check for 4-handed UI simplification? 
-                    // Actually per-player input is still safest to avoid confusion.
-                    // But maybe we can label them "Team 1 - Player 1"
-                    
                     let teamLabel = "";
                     if (isTeamGame) {
                         const teamNum = (idx % 2) + 1;
@@ -250,8 +281,8 @@ export default function RoundWizard() {
                     </div>
                  )})}
                  
-                 <div className="text-center text-sm text-muted-foreground">
-                    Total Trick Points: {trickScores.reduce((a,b) => a+b, 0)} (Should be ~250)
+                 <div className={`text-center text-sm ${trickScores.reduce((a,b) => a+b, 0) !== 250 ? 'text-red-400 font-bold' : 'text-muted-foreground'}`}>
+                    Total Trick Points: {trickScores.reduce((a,b) => a+b, 0)} {trickScores.reduce((a,b) => a+b, 0) !== 250 && "(Should be 250)"}
                  </div>
               </motion.div>
             )}
@@ -351,6 +382,25 @@ export default function RoundWizard() {
                  </Button>
               </div>
            </DialogContent>
+        </Dialog>
+
+        {/* Validation Error Dialog */}
+        <Dialog open={showValidationDialog} onOpenChange={setShowValidationDialog}>
+            <DialogContent className="bg-background border-white/10">
+                <DialogHeader>
+                    <DialogTitle className="flex items-center gap-2 text-yellow-500">
+                        <AlertTriangle className="h-5 w-5" />
+                        Check Scores
+                    </DialogTitle>
+                    <DialogDescription className="whitespace-pre-line pt-2">
+                        {validationError}
+                    </DialogDescription>
+                </DialogHeader>
+                <DialogFooter className="flex gap-2 sm:justify-start">
+                    <Button variant="ghost" onClick={() => setShowValidationDialog(false)}>Go Back & Fix</Button>
+                    <Button variant="destructive" onClick={() => { setShowValidationDialog(false); submitRound(); }}>Submit Anyway</Button>
+                </DialogFooter>
+            </DialogContent>
         </Dialog>
 
       </div>
