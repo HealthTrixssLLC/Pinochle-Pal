@@ -1,13 +1,12 @@
 import { useState } from "react";
-import { useLocation } from "wouter";
+import { useLocation, Redirect } from "wouter";
 import { useStore } from "@/lib/store";
 import { Layout } from "@/components/layout";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { SUITS, Suit, MELD_TYPES } from "@/lib/game-logic";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check, ChevronRight, ChevronLeft, Calculator, X, AlertTriangle } from "lucide-react";
+import { ChevronRight, ChevronLeft, Calculator, X, AlertTriangle } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 export default function RoundWizard() {
@@ -15,11 +14,12 @@ export default function RoundWizard() {
   const { activeGame, addRound, players } = useStore();
   const [step, setStep] = useState<"bid" | "trump" | "scores">("bid");
 
-  if (!activeGame) return null;
+  if (!activeGame) {
+    return <Redirect to="/" />;
+  }
 
   const isTeamGame = activeGame.config.type === '4-handed';
 
-  // Local state for the round
   const [bidderIndex, setBidderIndex] = useState<number>(0);
   const [bidAmount, setBidAmount] = useState<string>("250"); 
   const [trumpSuit, setTrumpSuit] = useState<Suit>("spades");
@@ -27,11 +27,9 @@ export default function RoundWizard() {
   const [meldScores, setMeldScores] = useState<number[]>(new Array(activeGame.config.playerIds.length).fill(0));
   const [trickScores, setTrickScores] = useState<number[]>(new Array(activeGame.config.playerIds.length).fill(0));
 
-  // Meld Calculator State
   const [activeMeldPlayerIdx, setActiveMeldPlayerIdx] = useState<number | null>(null);
   const [meldCounts, setMeldCounts] = useState<Record<string, number>>({}); 
 
-  // Validation State
   const [validationError, setValidationError] = useState<string | null>(null);
   const [showValidationDialog, setShowValidationDialog] = useState(false);
 
@@ -47,24 +45,17 @@ export default function RoundWizard() {
   };
 
   const validateAndSubmit = () => {
-      // Validation Logic
       const totalTricks = trickScores.reduce((a, b) => a + b, 0);
       const warnings: string[] = [];
 
-      // 1. Trick Total Check (Standard is 250)
       if (totalTricks !== 250) {
           warnings.push(`Total trick points equal ${totalTricks}, but standard is 250.`);
       }
 
-      // 2. Outlier Checks
-      // Meld > 400 is rare in single deck (Double Run + others? Double Run is 150+150=300? No, Double Run is 1500 in some, 150 in others? 
-      // In this app Run is 150. Double Run isn't explicitly in list, but Double Pinochle is 300.
-      // 400 is a safe "suspiciously high" threshold for warning.
       if (meldScores.some(m => m > 500)) {
           warnings.push("One or more players has an unusually high meld score (> 500).");
       }
       
-      // Tricks > 250 is impossible
       if (trickScores.some(t => t > 250)) {
           warnings.push("One player has > 250 trick points, which is impossible.");
       }
@@ -88,13 +79,12 @@ export default function RoundWizard() {
     setLocation("/game");
   };
 
-  // Meld Logic
   const openMeldCalculator = (playerIdx: number) => {
     setActiveMeldPlayerIdx(playerIdx);
-    setMeldCounts({}); // Reset temporary counts
+    setMeldCounts({});
   };
 
-  const addMeldItem = (meldId: string, points: number) => {
+  const addMeldItem = (meldId: string) => {
      setMeldCounts(prev => ({
         ...prev,
         [meldId]: (prev[meldId] || 0) + 1
@@ -104,7 +94,7 @@ export default function RoundWizard() {
   const removeMeldItem = (meldId: string) => {
      setMeldCounts(prev => ({
         ...prev,
-        [meldId]: 0 // "X to clear it out" as requested
+        [meldId]: 0
      }));
   };
 
@@ -123,7 +113,6 @@ export default function RoundWizard() {
     setActiveMeldPlayerIdx(null);
   };
 
-  // Numpad Component
   const Numpad = ({ value, onChange }: { value: string, onChange: (v: string) => void }) => (
     <div className="grid grid-cols-3 gap-2 mt-4 max-w-xs mx-auto">
       {[1, 2, 3, 4, 5, 6, 7, 8, 9, "00", 0, "C"].map((key) => (
@@ -134,6 +123,7 @@ export default function RoundWizard() {
             else onChange(value + key.toString());
           }}
           className="h-14 rounded-lg bg-white/5 border border-white/10 text-xl font-bold active:bg-white/20 transition-colors"
+          data-testid={`numpad-${key}`}
         >
           {key === "C" ? "⌫" : key}
         </button>
@@ -144,19 +134,17 @@ export default function RoundWizard() {
   return (
     <Layout>
       <div className="flex flex-col h-full">
-        {/* Step Indicator */}
         <div className="p-4 bg-black/20 flex justify-between items-center text-xs text-muted-foreground uppercase tracking-widest">
-           <button onClick={() => setStep("bid")} className={step === 'bid' ? "text-primary font-bold" : ""}>1. Bid</button>
+           <button onClick={() => setStep("bid")} className={step === 'bid' ? "text-primary font-bold" : ""} data-testid="step-bid">1. Bid</button>
            <span className="opacity-20">/</span>
-           <button onClick={() => setStep("trump")} className={step === 'trump' ? "text-primary font-bold" : ""}>2. Suit</button>
+           <button onClick={() => setStep("trump")} className={step === 'trump' ? "text-primary font-bold" : ""} data-testid="step-trump">2. Suit</button>
            <span className="opacity-20">/</span>
-           <button onClick={() => setStep("scores")} className={step === 'scores' ? "text-primary font-bold" : ""}>3. Score</button>
+           <button onClick={() => setStep("scores")} className={step === 'scores' ? "text-primary font-bold" : ""} data-testid="step-scores">3. Score</button>
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 pb-24">
           <AnimatePresence mode="wait">
             
-            {/* STEP 1: BID */}
             {step === "bid" && (
               <motion.div 
                 key="bid"
@@ -176,6 +164,7 @@ export default function RoundWizard() {
                                 ? "bg-primary text-primary-foreground border-primary shadow-[0_0_15px_rgba(234,179,8,0.4)]" 
                                 : "bg-black/20 border-white/10 text-muted-foreground hover:bg-white/5"}
                           `}
+                          data-testid={`button-bidder-${idx}`}
                         >
                           {getPlayerName(idx)}
                         </button>
@@ -185,7 +174,7 @@ export default function RoundWizard() {
 
                 <div>
                   <label className="text-muted-foreground text-sm uppercase tracking-wide">Bid Amount</label>
-                  <div className="text-6xl font-serif font-bold text-white mt-2 mb-4 tracking-tighter">
+                  <div className="text-6xl font-serif font-bold text-white mt-2 mb-4 tracking-tighter" data-testid="text-bid-amount">
                      {bidAmount || "0"}
                   </div>
                   <Numpad value={bidAmount} onChange={setBidAmount} />
@@ -193,7 +182,6 @@ export default function RoundWizard() {
               </motion.div>
             )}
 
-            {/* STEP 2: TRUMP */}
             {step === "trump" && (
               <motion.div 
                  key="trump"
@@ -212,6 +200,7 @@ export default function RoundWizard() {
                              ? "border-primary bg-primary/10 scale-105 shadow-lg"
                              : "border-white/10 bg-black/20 opacity-70 grayscale hover:grayscale-0 hover:opacity-100"}
                          `}
+                         data-testid={`button-suit-${s.value}`}
                        >
                           <span className={`text-6xl mb-2 ${s.color}`}>{s.symbol}</span>
                           <span className="text-xs uppercase tracking-widest font-bold">{s.label}</span>
@@ -221,7 +210,6 @@ export default function RoundWizard() {
               </motion.div>
             )}
 
-            {/* STEP 3: SCORES */}
             {step === "scores" && (
               <motion.div 
                  key="scores"
@@ -236,7 +224,7 @@ export default function RoundWizard() {
                     }
 
                     return (
-                    <div key={id} className={`bg-white/5 rounded-lg p-4 border ${idx === bidderIndex ? 'border-primary/50' : 'border-white/10'}`}>
+                    <div key={id} className={`bg-white/5 rounded-lg p-4 border ${idx === bidderIndex ? 'border-primary/50' : 'border-white/10'}`} data-testid={`score-card-${idx}`}>
                        <div className="flex justify-between items-center mb-4">
                           <div className="flex flex-col">
                               {teamLabel && <span className="text-[10px] text-muted-foreground uppercase">{teamLabel}</span>}
@@ -256,6 +244,7 @@ export default function RoundWizard() {
                             <button 
                                onClick={() => openMeldCalculator(idx)}
                                className="w-full bg-black/20 border border-white/10 rounded p-3 text-xl font-mono text-left flex justify-between items-center hover:bg-white/5 active:bg-white/10 transition-colors"
+                               data-testid={`button-meld-${idx}`}
                             >
                                {meldScores[idx] || "0"}
                                <Calculator className="h-4 w-4 text-primary opacity-50" />
@@ -275,13 +264,14 @@ export default function RoundWizard() {
                                  setTrickScores(newTricks);
                               }}
                               placeholder="0"
+                              data-testid={`input-tricks-${idx}`}
                             />
                           </div>
                        </div>
                     </div>
                  )})}
                  
-                 <div className={`text-center text-sm ${trickScores.reduce((a,b) => a+b, 0) !== 250 ? 'text-red-400 font-bold' : 'text-muted-foreground'}`}>
+                 <div className={`text-center text-sm ${trickScores.reduce((a,b) => a+b, 0) !== 250 ? 'text-red-400 font-bold' : 'text-muted-foreground'}`} data-testid="text-trick-total">
                     Total Trick Points: {trickScores.reduce((a,b) => a+b, 0)} {trickScores.reduce((a,b) => a+b, 0) !== 250 && "(Should be 250)"}
                  </div>
               </motion.div>
@@ -290,25 +280,23 @@ export default function RoundWizard() {
           </AnimatePresence>
         </div>
 
-        {/* Floating Action Button area */}
         <div className="absolute bottom-0 left-0 right-0 p-4 bg-background/80 backdrop-blur border-t border-white/10">
            <div className="flex gap-4">
              {step !== 'bid' && (
                <Button variant="outline" onClick={() => {
                  if(step === 'scores') setStep('trump');
                  if(step === 'trump') setStep('bid');
-               }} className="h-14 aspect-square rounded-full border-white/10">
+               }} className="h-14 aspect-square rounded-full border-white/10" data-testid="button-prev">
                  <ChevronLeft />
                </Button>
              )}
              
-             <Button className="flex-1 h-14 rounded-full text-lg font-serif bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg" onClick={handleNext}>
+             <Button className="flex-1 h-14 rounded-full text-lg font-serif bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg" onClick={handleNext} data-testid="button-next">
                 {step === 'scores' ? "Finish Round" : "Next"} <ChevronRight className="ml-2" />
              </Button>
            </div>
         </div>
 
-        {/* Meld Calculator Dialog/Sheet */}
         <Dialog open={activeMeldPlayerIdx !== null} onOpenChange={(open) => !open && setActiveMeldPlayerIdx(null)}>
            <DialogContent className="h-[80vh] flex flex-col p-0 gap-0 bg-background border-white/10">
               <DialogHeader className="p-4 border-b border-white/10 bg-black/20">
@@ -333,11 +321,12 @@ export default function RoundWizard() {
                                     return (
                                         <button 
                                             key={meld.id}
-                                            onClick={() => addMeldItem(meld.id, meld.points)}
+                                            onClick={() => addMeldItem(meld.id)}
                                             className={`
                                                 relative p-3 rounded-xl border text-left transition-all
                                                 ${count > 0 ? 'bg-primary/20 border-primary' : 'bg-white/5 border-white/10 hover:bg-white/10'}
                                             `}
+                                            data-testid={`meld-button-${meld.id}`}
                                         >
                                             <div className="flex justify-between items-start mb-1">
                                                 <span className="text-2xl">{meld.icon}</span>
@@ -345,6 +334,7 @@ export default function RoundWizard() {
                                                     <div 
                                                         onClick={(e) => { e.stopPropagation(); removeMeldItem(meld.id); }}
                                                         className="bg-black/40 hover:bg-red-500/80 rounded-full p-1 -mr-1 -mt-1 transition-colors"
+                                                        data-testid={`meld-clear-${meld.id}`}
                                                     >
                                                         <X className="h-3 w-3" />
                                                     </div>
@@ -354,7 +344,7 @@ export default function RoundWizard() {
                                             <div className="text-xs text-muted-foreground mt-1">{meld.points} pts</div>
                                             
                                             {count > 0 && (
-                                                <div className="absolute top-2 right-8 bg-primary text-primary-foreground text-xs font-bold px-2 py-0.5 rounded-full">
+                                                <div className="absolute top-2 right-8 bg-primary text-primary-foreground text-xs font-bold px-2 py-0.5 rounded-full" data-testid={`meld-count-${meld.id}`}>
                                                     x{count}
                                                 </div>
                                             )}
@@ -370,21 +360,20 @@ export default function RoundWizard() {
               <div className="p-4 border-t border-white/10 bg-black/20 safe-area-bottom">
                  <div className="flex justify-between items-center mb-4 px-2">
                     <span className="text-sm text-muted-foreground">Total Meld</span>
-                    <span className="text-3xl font-mono font-bold text-primary">
+                    <span className="text-3xl font-mono font-bold text-primary" data-testid="text-meld-total">
                         {Object.entries(meldCounts).reduce((acc, [id, count]) => {
                             const type = MELD_TYPES.find(m => m.id === id);
                             return acc + (type ? type.points * count : 0);
                         }, 0)}
                     </span>
                  </div>
-                 <Button className="w-full h-12 text-lg font-serif" onClick={confirmMeldCalc}>
+                 <Button className="w-full h-12 text-lg font-serif" onClick={confirmMeldCalc} data-testid="button-confirm-meld">
                     Confirm Meld
                  </Button>
               </div>
            </DialogContent>
         </Dialog>
 
-        {/* Validation Error Dialog */}
         <Dialog open={showValidationDialog} onOpenChange={setShowValidationDialog}>
             <DialogContent className="bg-background border-white/10">
                 <DialogHeader>
@@ -397,8 +386,8 @@ export default function RoundWizard() {
                     </DialogDescription>
                 </DialogHeader>
                 <DialogFooter className="flex gap-2 sm:justify-start">
-                    <Button variant="ghost" onClick={() => setShowValidationDialog(false)}>Go Back & Fix</Button>
-                    <Button variant="destructive" onClick={() => { setShowValidationDialog(false); submitRound(); }}>Submit Anyway</Button>
+                    <Button variant="ghost" onClick={() => setShowValidationDialog(false)} data-testid="button-fix-scores">Go Back & Fix</Button>
+                    <Button variant="destructive" onClick={() => { setShowValidationDialog(false); submitRound(); }} data-testid="button-submit-anyway">Submit Anyway</Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

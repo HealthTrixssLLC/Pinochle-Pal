@@ -1,4 +1,3 @@
-import { useStore } from "@/lib/store";
 import { Layout } from "@/components/layout";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
@@ -6,14 +5,14 @@ export default function Rules() {
   return (
     <Layout>
       <header className="p-4 border-b border-white/10 flex items-center gap-2 sticky top-0 bg-background/80 backdrop-blur z-10">
-        <button onClick={() => window.history.back()} className="text-muted-foreground hover:text-primary">
+        <button onClick={() => window.history.back()} className="text-muted-foreground hover:text-primary" data-testid="button-back">
           Back
         </button>
-        <h1 className="font-serif font-bold text-xl">Pinochle Rules</h1>
+        <h1 className="font-serif font-bold text-xl" data-testid="text-rules-title">Pinochle Rules</h1>
       </header>
       <ScrollArea className="flex-1 p-6">
         <div className="prose prose-invert max-w-none space-y-6 pb-20">
-          <section>
+          <section data-testid="section-deck">
             <h3 className="text-primary font-serif text-lg border-b border-primary/20 pb-1 mb-2">The Deck</h3>
             <p className="text-sm text-muted-foreground">
               A Pinochle deck consists of 48 cards: two each of Ace, Ten, King, Queen, Jack, and Nine in each of the four suits.
@@ -21,7 +20,7 @@ export default function Rules() {
             </p>
           </section>
 
-          <section>
+          <section data-testid="section-values">
             <h3 className="text-primary font-serif text-lg border-b border-primary/20 pb-1 mb-2">Card Values</h3>
             <ul className="text-sm text-muted-foreground list-disc pl-4 space-y-1">
               <li>Ace: 11 points (or 10 in simplified scoring)</li>
@@ -36,7 +35,7 @@ export default function Rules() {
             </p>
           </section>
 
-          <section>
+          <section data-testid="section-melds">
             <h3 className="text-primary font-serif text-lg border-b border-primary/20 pb-1 mb-2">Melds</h3>
             <div className="space-y-4">
               <div>
@@ -67,7 +66,7 @@ export default function Rules() {
             </div>
           </section>
 
-          <section>
+          <section data-testid="section-scoring">
             <h3 className="text-primary font-serif text-lg border-b border-primary/20 pb-1 mb-2">Scoring</h3>
             <p className="text-sm text-muted-foreground">
               The bidder must equal or exceed their bid with (Meld + Tricks). If they fail, they go "Set" and lose the bid amount from their score. Other players score their meld (if they took a trick) plus their trick points.
