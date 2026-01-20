@@ -10,6 +10,8 @@ import Game from "@/pages/game";
 import RoundWizard from "@/pages/round-wizard";
 import Rules from "@/pages/rules";
 import Players from "@/pages/players";
+import History from "@/pages/history";
+import GameStats from "@/pages/game-stats";
 
 function Router() {
   return (
@@ -18,8 +20,10 @@ function Router() {
       <Route path="/new-game" component={NewGame} />
       <Route path="/game" component={Game} />
       <Route path="/game/round" component={RoundWizard} />
+      <Route path="/game/stats" component={GameStats} />
       <Route path="/rules" component={Rules} />
       <Route path="/players" component={Players} />
+      <Route path="/history" component={History} />
       <Route component={NotFound} />
     </Switch>
   );

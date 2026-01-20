@@ -4,7 +4,7 @@ import { Layout } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { motion } from "framer-motion";
-import { Play, Users, BookOpen, RotateCcw } from "lucide-react";
+import { Play, Users, BookOpen, RotateCcw, History as HistoryIcon } from "lucide-react";
 
 export default function Home() {
   const [, setLocation] = useLocation();
@@ -54,20 +54,28 @@ export default function Home() {
           <Button 
             variant="outline" 
             className="h-24 flex-col gap-2 border-white/10 bg-black/20 hover:bg-black/30 hover:text-primary transition-all"
+            onClick={() => setLocation("/history")}
+          >
+            <HistoryIcon className="h-6 w-6" />
+            <span>History</span>
+          </Button>
+          <Button 
+            variant="outline" 
+            className="h-24 flex-col gap-2 border-white/10 bg-black/20 hover:bg-black/30 hover:text-primary transition-all"
             onClick={() => setLocation("/players")}
           >
             <Users className="h-6 w-6" />
             <span>Players</span>
           </Button>
-          <Button 
-            variant="outline" 
-            className="h-24 flex-col gap-2 border-white/10 bg-black/20 hover:bg-black/30 hover:text-primary transition-all"
-            onClick={() => setLocation("/rules")}
-          >
-            <BookOpen className="h-6 w-6" />
-            <span>Rules</span>
-          </Button>
         </div>
+        
+        <Button 
+           variant="ghost" 
+           className="w-full text-muted-foreground hover:text-primary mt-2"
+           onClick={() => setLocation("/rules")}
+        >
+           <BookOpen className="h-4 w-4 mr-2" /> Rules & Help
+        </Button>
       </div>
 
       <div className="text-center text-xs text-muted-foreground/50 mt-auto pt-8">

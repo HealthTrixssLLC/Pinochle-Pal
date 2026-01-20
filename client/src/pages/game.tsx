@@ -2,7 +2,7 @@ import { useStore } from "@/lib/store";
 import { Layout, Header } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
-import { Plus, AlertCircle, RotateCcw } from "lucide-react";
+import { Plus, AlertCircle, RotateCcw, BarChart3 } from "lucide-react";
 import { SUITS } from "@/lib/game-logic";
 
 export default function Game() {
@@ -40,13 +40,23 @@ export default function Game() {
          <Button variant="ghost" size="sm" onClick={() => { quitActiveGame(); setLocation("/"); }} className="text-muted-foreground">
            Quit
          </Button>
-         <div className="text-center">
+         <div className="text-center flex flex-col items-center">
             <h2 className="text-xs font-bold text-primary tracking-widest uppercase">Target: {activeGame.config.targetScore}</h2>
+            {activeGame.status === 'finished' && <span className="text-[10px] text-primary animate-pulse">GAME OVER</span>}
          </div>
-         <Button variant="ghost" size="sm" onClick={() => setLocation("/rules")}>
-           Rules
-         </Button>
+         <div className="flex gap-1">
+             <Button variant="ghost" size="icon" onClick={() => setLocation("/game/stats")}>
+               <BarChart3 className="h-5 w-5" />
+             </Button>
+             <Button variant="ghost" size="icon" onClick={() => setLocation("/rules")}>
+               {/* Using a simple ? for rules if needed, or keep text */}
+               <span className="font-serif font-bold italic">i</span>
+             </Button>
+         </div>
       </header>
+
+      {/* Ad Harness (Placeholder) */}
+      {/* <div className="w-full h-12 bg-white/5 border-b border-white/10 flex items-center justify-center text-[10px] text-muted-foreground uppercase tracking-widest">Ad Space</div> */}
 
       {/* Scoreboard Header */}
       <div className={`grid ${isTeamGame ? 'grid-cols-2' : `grid-cols-${displayEntities.length}`} gap-px bg-white/10 border-b border-white/10`}>
@@ -79,8 +89,6 @@ export default function Game() {
                  {displayEntities.map((_, i) => {
                     let score = 0;
                     if (isTeamGame) {
-                      // Team 0 (i=0) -> Players 0 & 2
-                      // Team 1 (i=1) -> Players 1 & 3
                       if (i === 0) score = round.roundScores[0] + round.roundScores[2];
                       if (i === 1) score = round.roundScores[1] + round.roundScores[3];
                     } else {
@@ -109,8 +117,12 @@ export default function Game() {
         <Button variant="outline" size="icon" onClick={deleteLastRound} disabled={activeGame.rounds.length === 0} className="border-white/10 hover:bg-red-500/20 hover:text-red-400 hover:border-red-500/50">
            <RotateCcw className="h-5 w-5" />
         </Button>
-        <Button className="flex-1 h-12 text-lg font-serif bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/20" onClick={() => setLocation("/game/round")}>
-          <Plus className="mr-2" /> Score Round
+        <Button 
+           className="flex-1 h-12 text-lg font-serif bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/20" 
+           onClick={() => setLocation("/game/round")}
+           disabled={activeGame.status === 'finished'}
+        >
+          {activeGame.status === 'finished' ? "Game Finished" : <><Plus className="mr-2" /> Score Round</>}
         </Button>
       </div>
     </Layout>
