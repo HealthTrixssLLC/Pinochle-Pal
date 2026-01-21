@@ -12,7 +12,7 @@ export default function Home() {
   const hasActiveGame = !!activeGame;
 
   return (
-    <Layout className="justify-center p-6 gap-8">
+    <Layout className="justify-center p-6 pt-[env(safe-area-inset-top,44px)] pb-[env(safe-area-inset-bottom,20px)] gap-8">
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -74,7 +74,7 @@ export default function Home() {
         
         <Button 
            variant="ghost" 
-           className="w-full text-muted-foreground hover:text-primary mt-2"
+           className="w-full text-muted-foreground hover:text-primary mt-2 min-h-[44px]"
            onClick={() => setLocation("/rules")}
            data-testid="button-rules"
         >

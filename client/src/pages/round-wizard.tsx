@@ -134,15 +134,20 @@ export default function RoundWizard() {
   return (
     <Layout>
       <div className="flex flex-col h-full">
-        <div className="p-4 bg-black/20 flex justify-between items-center text-xs text-muted-foreground uppercase tracking-widest">
-           <button onClick={() => setStep("bid")} className={step === 'bid' ? "text-primary font-bold" : ""} data-testid="step-bid">1. Bid</button>
-           <span className="opacity-20">/</span>
-           <button onClick={() => setStep("trump")} className={step === 'trump' ? "text-primary font-bold" : ""} data-testid="step-trump">2. Suit</button>
-           <span className="opacity-20">/</span>
-           <button onClick={() => setStep("scores")} className={step === 'scores' ? "text-primary font-bold" : ""} data-testid="step-scores">3. Score</button>
+        <div className="px-4 pb-4 pt-[env(safe-area-inset-top,44px)] bg-black/30 backdrop-blur-sm flex justify-between items-center text-xs text-muted-foreground uppercase tracking-widest sticky top-0 z-50 border-b border-white/10">
+           <button onClick={() => setLocation("/game")} className="text-muted-foreground hover:text-primary p-2 -ml-2 min-w-[44px] min-h-[44px] flex items-center" data-testid="button-cancel">
+             <ChevronLeft className="w-5 h-5 mr-1" /> Cancel
+           </button>
+           <div className="flex items-center gap-2">
+             <button onClick={() => setStep("bid")} className={`p-2 ${step === 'bid' ? "text-primary font-bold" : ""}`} data-testid="step-bid">1. Bid</button>
+             <span className="opacity-20">/</span>
+             <button onClick={() => setStep("trump")} className={`p-2 ${step === 'trump' ? "text-primary font-bold" : ""}`} data-testid="step-trump">2. Suit</button>
+             <span className="opacity-20">/</span>
+             <button onClick={() => setStep("scores")} className={`p-2 ${step === 'scores' ? "text-primary font-bold" : ""}`} data-testid="step-scores">3. Score</button>
+           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4 pb-24">
+        <div className="flex-1 overflow-y-auto p-4 pb-32">
           <AnimatePresence mode="wait">
             
             {step === "bid" && (
@@ -159,7 +164,7 @@ export default function RoundWizard() {
                           key={id}
                           onClick={() => setBidderIndex(idx)}
                           className={`
-                            px-4 py-2 rounded-full border transition-all text-sm font-bold
+                            px-4 py-3 rounded-full border transition-all text-sm font-bold min-h-[44px]
                             ${bidderIndex === idx 
                                 ? "bg-primary text-primary-foreground border-primary shadow-[0_0_15px_rgba(234,179,8,0.4)]" 
                                 : "bg-black/20 border-white/10 text-muted-foreground hover:bg-white/5"}
@@ -195,7 +200,7 @@ export default function RoundWizard() {
                          key={s.value}
                          onClick={() => setTrumpSuit(s.value)}
                          className={`
-                           aspect-square flex flex-col items-center justify-center rounded-xl border-2 transition-all
+                           aspect-square flex flex-col items-center justify-center rounded-xl border-2 transition-all min-h-[100px]
                            ${trumpSuit === s.value
                              ? "border-primary bg-primary/10 scale-105 shadow-lg"
                              : "border-white/10 bg-black/20 opacity-70 grayscale hover:grayscale-0 hover:opacity-100"}
@@ -243,7 +248,7 @@ export default function RoundWizard() {
                             </label>
                             <button 
                                onClick={() => openMeldCalculator(idx)}
-                               className="w-full bg-black/20 border border-white/10 rounded p-3 text-xl font-mono text-left flex justify-between items-center hover:bg-white/5 active:bg-white/10 transition-colors"
+                               className="w-full bg-black/20 border border-white/10 rounded p-3 text-xl font-mono text-left flex justify-between items-center hover:bg-white/5 active:bg-white/10 transition-colors min-h-[52px]"
                                data-testid={`button-meld-${idx}`}
                             >
                                {meldScores[idx] || "0"}
@@ -256,7 +261,7 @@ export default function RoundWizard() {
                               type="number"
                               pattern="[0-9]*"
                               inputMode="numeric"
-                              className="w-full bg-black/20 border border-white/10 rounded p-3 text-xl font-mono focus:border-primary outline-none"
+                              className="w-full bg-black/20 border border-white/10 rounded p-3 text-xl font-mono focus:border-primary outline-none min-h-[52px]"
                               value={trickScores[idx] || ""}
                               onChange={(e) => {
                                  const newTricks = [...trickScores];
@@ -280,13 +285,13 @@ export default function RoundWizard() {
           </AnimatePresence>
         </div>
 
-        <div className="absolute bottom-0 left-0 right-0 p-4 bg-background/80 backdrop-blur border-t border-white/10">
-           <div className="flex gap-4">
+        <div className="fixed bottom-0 left-0 right-0 p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] bg-background/90 backdrop-blur border-t border-white/10 z-40">
+           <div className="flex gap-4 max-w-md mx-auto">
              {step !== 'bid' && (
                <Button variant="outline" onClick={() => {
                  if(step === 'scores') setStep('trump');
                  if(step === 'trump') setStep('bid');
-               }} className="h-14 aspect-square rounded-full border-white/10" data-testid="button-prev">
+               }} className="h-14 w-14 rounded-full border-white/10" data-testid="button-prev">
                  <ChevronLeft />
                </Button>
              )}
@@ -323,7 +328,7 @@ export default function RoundWizard() {
                                             key={meld.id}
                                             onClick={() => addMeldItem(meld.id)}
                                             className={`
-                                                relative p-3 rounded-xl border text-left transition-all
+                                                relative p-3 rounded-xl border text-left transition-all min-h-[80px]
                                                 ${count > 0 ? 'bg-primary/20 border-primary' : 'bg-white/5 border-white/10 hover:bg-white/10'}
                                             `}
                                             data-testid={`meld-button-${meld.id}`}
@@ -333,7 +338,7 @@ export default function RoundWizard() {
                                                 {count > 0 && (
                                                     <div 
                                                         onClick={(e) => { e.stopPropagation(); removeMeldItem(meld.id); }}
-                                                        className="bg-black/40 hover:bg-red-500/80 rounded-full p-1 -mr-1 -mt-1 transition-colors"
+                                                        className="bg-black/40 hover:bg-red-500/80 rounded-full p-1 -mr-1 -mt-1 transition-colors min-w-[28px] min-h-[28px] flex items-center justify-center"
                                                         data-testid={`meld-clear-${meld.id}`}
                                                     >
                                                         <X className="h-3 w-3" />
@@ -357,7 +362,7 @@ export default function RoundWizard() {
                  </div>
               </ScrollArea>
 
-              <div className="p-4 border-t border-white/10 bg-black/20 safe-area-bottom">
+              <div className="p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] border-t border-white/10 bg-black/20">
                  <div className="flex justify-between items-center mb-4 px-2">
                     <span className="text-sm text-muted-foreground">Total Meld</span>
                     <span className="text-3xl font-mono font-bold text-primary" data-testid="text-meld-total">

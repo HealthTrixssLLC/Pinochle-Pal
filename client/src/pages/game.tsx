@@ -1,8 +1,8 @@
 import { useStore } from "@/lib/store";
-import { Layout, Header } from "@/components/layout";
+import { Layout } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { useLocation, Redirect } from "wouter";
-import { Plus, AlertCircle, RotateCcw, BarChart3 } from "lucide-react";
+import { Plus, RotateCcw, BarChart3, ChevronLeft } from "lucide-react";
 import { SUITS } from "@/lib/game-logic";
 
 export default function Game() {
@@ -32,14 +32,15 @@ export default function Game() {
 
   return (
     <Layout>
-      <header className="flex items-center justify-between p-4 bg-black/20 border-b border-white/10">
+      <header className="flex items-center justify-between px-4 pb-4 pt-[env(safe-area-inset-top,44px)] bg-black/30 backdrop-blur-sm border-b border-white/10 sticky top-0 z-50">
          <Button 
            variant="ghost" 
            size="sm" 
            onClick={() => { quitActiveGame(); setLocation("/"); }} 
-           className="text-muted-foreground"
+           className="text-muted-foreground min-w-[44px] min-h-[44px]"
            data-testid="button-quit-game"
          >
+           <ChevronLeft className="h-5 w-5 mr-1" />
            Quit
          </Button>
          <div className="text-center flex flex-col items-center">
@@ -47,11 +48,11 @@ export default function Game() {
             {activeGame.status === 'finished' && <span className="text-[10px] text-primary animate-pulse" data-testid="text-game-over">GAME OVER</span>}
          </div>
          <div className="flex gap-1">
-             <Button variant="ghost" size="icon" onClick={() => setLocation("/game/stats")} data-testid="button-view-stats">
+             <Button variant="ghost" size="icon" onClick={() => setLocation("/game/stats")} className="min-w-[44px] min-h-[44px]" data-testid="button-view-stats">
                <BarChart3 className="h-5 w-5" />
              </Button>
-             <Button variant="ghost" size="icon" onClick={() => setLocation("/rules")} data-testid="button-view-rules">
-               <span className="font-serif font-bold italic">i</span>
+             <Button variant="ghost" size="icon" onClick={() => setLocation("/rules")} className="min-w-[44px] min-h-[44px]" data-testid="button-view-rules">
+               <span className="font-serif font-bold italic text-lg">i</span>
              </Button>
          </div>
       </header>
@@ -108,13 +109,13 @@ export default function Game() {
         )}
       </div>
 
-      <div className="p-4 bg-black/40 backdrop-blur border-t border-white/10 flex gap-4 safe-area-bottom">
+      <div className="p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] bg-black/40 backdrop-blur border-t border-white/10 flex gap-4">
         <Button 
           variant="outline" 
           size="icon" 
           onClick={deleteLastRound} 
           disabled={activeGame.rounds.length === 0} 
-          className="border-white/10 hover:bg-red-500/20 hover:text-red-400 hover:border-red-500/50"
+          className="border-white/10 hover:bg-red-500/20 hover:text-red-400 hover:border-red-500/50 min-w-[44px] min-h-[44px]"
           data-testid="button-undo-round"
         >
            <RotateCcw className="h-5 w-5" />

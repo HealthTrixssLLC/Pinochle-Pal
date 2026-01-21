@@ -1,14 +1,30 @@
 import { Layout } from "@/components/layout";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useLocation } from "wouter";
+import { ChevronLeft } from "lucide-react";
 
 export default function Rules() {
+  const [, setLocation] = useLocation();
+  
+  const handleBack = () => {
+    if (window.history.length > 1) {
+      window.history.back();
+    } else {
+      setLocation("/");
+    }
+  };
+
   return (
     <Layout>
-      <header className="p-4 border-b border-white/10 flex items-center gap-2 sticky top-0 bg-background/80 backdrop-blur z-10">
-        <button onClick={() => window.history.back()} className="text-muted-foreground hover:text-primary" data-testid="button-back">
-          Back
+      <header className="px-4 pb-4 pt-[env(safe-area-inset-top,44px)] border-b border-white/10 flex items-center gap-2 sticky top-0 bg-black/30 backdrop-blur-sm z-50">
+        <button 
+          onClick={handleBack} 
+          className="text-muted-foreground hover:text-primary p-2 -ml-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
+          data-testid="button-back"
+        >
+          <ChevronLeft className="w-6 h-6" />
         </button>
-        <h1 className="font-serif font-bold text-xl" data-testid="text-rules-title">Pinochle Rules</h1>
+        <h1 className="font-serif font-bold text-xl text-primary" data-testid="text-rules-title">Pinochle Rules</h1>
       </header>
       <ScrollArea className="flex-1 p-6">
         <div className="prose prose-invert max-w-none space-y-6 pb-20">
