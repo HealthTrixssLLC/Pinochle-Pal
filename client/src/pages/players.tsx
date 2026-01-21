@@ -30,11 +30,11 @@ export default function Players() {
             onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
             data-testid="input-player-name"
           />
-          <Button onClick={handleAdd} disabled={!name.trim()} data-testid="button-add-player">Add</Button>
+          <Button onClick={handleAdd} disabled={!name.trim()} className="min-w-[44px] min-h-[44px]" data-testid="button-add-player">Add</Button>
         </div>
 
         <ScrollArea className="flex-1">
-          <div className="space-y-3">
+          <div className="space-y-3 pb-8">
             {players.map((player, idx) => (
               <div key={player.id} className="bg-card p-4 rounded-lg border border-white/5 flex justify-between items-center" data-testid={`player-card-${idx}`}>
                 <div>

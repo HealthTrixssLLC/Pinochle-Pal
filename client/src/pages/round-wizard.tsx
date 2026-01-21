@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useLocation, Redirect } from "wouter";
 import { useStore } from "@/lib/store";
-import { Layout } from "@/components/layout";
+import { Layout, SafeAreaTop } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { SUITS, Suit, MELD_TYPES } from "@/lib/game-logic";
@@ -134,7 +134,8 @@ export default function RoundWizard() {
   return (
     <Layout>
       <div className="flex flex-col h-full">
-        <div className="px-4 pb-4 pt-[env(safe-area-inset-top,44px)] bg-black/30 backdrop-blur-sm flex justify-between items-center text-xs text-muted-foreground uppercase tracking-widest sticky top-0 z-50 border-b border-white/10">
+        <SafeAreaTop />
+        <div className="px-4 py-3 bg-black/30 backdrop-blur-sm flex justify-between items-center text-xs text-muted-foreground uppercase tracking-widest sticky top-0 z-50 border-b border-white/10">
            <button onClick={() => setLocation("/game")} className="text-muted-foreground hover:text-primary p-2 -ml-2 min-w-[44px] min-h-[44px] flex items-center" data-testid="button-cancel">
              <ChevronLeft className="w-5 h-5 mr-1" /> Cancel
            </button>

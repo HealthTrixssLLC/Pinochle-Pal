@@ -67,7 +67,7 @@ export default function NewGame() {
     <Layout>
       <Header title="New Game" showBack />
       
-      <div className="p-6 space-y-8 pb-24">
+      <div className="p-6 space-y-8 pb-24 overflow-y-auto flex-1">
         
         <div className="space-y-3">
           <Label className="text-lg text-primary">Number of Players</Label>
@@ -80,7 +80,7 @@ export default function NewGame() {
                     setSelectedPlayers([]); 
                 }}
                 className={`
-                  flex flex-col items-center justify-center p-3 rounded-lg border-2 transition-all
+                  flex flex-col items-center justify-center p-3 rounded-lg border-2 transition-all min-h-[60px]
                   ${gameType === type 
                     ? "border-primary bg-primary/10 text-primary" 
                     : "border-white/10 bg-black/20 text-muted-foreground hover:bg-white/5"}
@@ -109,7 +109,7 @@ export default function NewGame() {
               onKeyDown={(e) => e.key === 'Enter' && handleAddPlayer()}
               data-testid="input-new-player"
             />
-            <Button size="icon" onClick={handleAddPlayer} disabled={!newPlayerName.trim()} data-testid="button-add-player">
+            <Button size="icon" onClick={handleAddPlayer} disabled={!newPlayerName.trim()} className="min-w-[44px] min-h-[44px]" data-testid="button-add-player">
               <Plus className="h-4 w-4" />
             </Button>
           </div>
@@ -123,7 +123,7 @@ export default function NewGame() {
                     key={player.id}
                     onClick={() => togglePlayer(player.id)}
                     className={`
-                      flex items-center justify-between p-3 rounded-md cursor-pointer transition-colors
+                      flex items-center justify-between p-3 rounded-md cursor-pointer transition-colors min-h-[44px]
                       ${isSelected ? "bg-primary/20 border border-primary/30" : "hover:bg-white/5"}
                     `}
                     data-testid={`player-item-${player.id}`}
@@ -157,11 +157,11 @@ export default function NewGame() {
                     <Label className="text-xs uppercase text-primary/80">Team 1</Label>
                     <div className="grid grid-cols-2 gap-2">
                        {[0, 2].map((idx) => (
-                          <div key={selectedPlayers[idx]} className="bg-black/40 p-3 rounded flex justify-between items-center group" data-testid={`team-player-${idx}`}>
+                          <div key={selectedPlayers[idx]} className="bg-black/40 p-3 rounded flex justify-between items-center group min-h-[44px]" data-testid={`team-player-${idx}`}>
                              <span>{getPlayerName(selectedPlayers[idx])}</span>
                              <div className="flex flex-col gap-1 opacity-50 group-hover:opacity-100">
-                                {idx > 0 && <button onClick={() => movePlayer(idx, idx-1)} data-testid={`button-move-up-${idx}`}><ArrowUp className="h-3 w-3" /></button>}
-                                {idx < 3 && <button onClick={() => movePlayer(idx, idx+1)} data-testid={`button-move-down-${idx}`}><ArrowDown className="h-3 w-3" /></button>}
+                                {idx > 0 && <button onClick={() => movePlayer(idx, idx-1)} className="p-1" data-testid={`button-move-up-${idx}`}><ArrowUp className="h-3 w-3" /></button>}
+                                {idx < 3 && <button onClick={() => movePlayer(idx, idx+1)} className="p-1" data-testid={`button-move-down-${idx}`}><ArrowDown className="h-3 w-3" /></button>}
                              </div>
                           </div>
                        ))}
@@ -172,11 +172,11 @@ export default function NewGame() {
                     <Label className="text-xs uppercase text-primary/80">Team 2</Label>
                     <div className="grid grid-cols-2 gap-2">
                        {[1, 3].map((idx) => (
-                          <div key={selectedPlayers[idx]} className="bg-black/40 p-3 rounded flex justify-between items-center group" data-testid={`team-player-${idx}`}>
+                          <div key={selectedPlayers[idx]} className="bg-black/40 p-3 rounded flex justify-between items-center group min-h-[44px]" data-testid={`team-player-${idx}`}>
                              <span>{getPlayerName(selectedPlayers[idx])}</span>
                              <div className="flex flex-col gap-1 opacity-50 group-hover:opacity-100">
-                                {idx > 0 && <button onClick={() => movePlayer(idx, idx-1)} data-testid={`button-move-up-${idx}`}><ArrowUp className="h-3 w-3" /></button>}
-                                {idx < 3 && <button onClick={() => movePlayer(idx, idx+1)} data-testid={`button-move-down-${idx}`}><ArrowDown className="h-3 w-3" /></button>}
+                                {idx > 0 && <button onClick={() => movePlayer(idx, idx-1)} className="p-1" data-testid={`button-move-up-${idx}`}><ArrowUp className="h-3 w-3" /></button>}
+                                {idx < 3 && <button onClick={() => movePlayer(idx, idx+1)} className="p-1" data-testid={`button-move-down-${idx}`}><ArrowDown className="h-3 w-3" /></button>}
                              </div>
                           </div>
                        ))}

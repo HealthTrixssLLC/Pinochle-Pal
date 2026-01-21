@@ -28,6 +28,18 @@ export function Layout({ children, className }: { children: React.ReactNode; cla
   );
 }
 
+export function SafeAreaTop() {
+  return (
+    <div 
+      className="w-full bg-black/40 backdrop-blur-sm shrink-0"
+      style={{ 
+        height: 'env(safe-area-inset-top, 48px)',
+        minHeight: '48px'
+      }}
+    />
+  );
+}
+
 export function Header({ title, showBack = false }: { title: string, showBack?: boolean }) {
   const [, setLocation] = useLocation();
   
@@ -40,19 +52,22 @@ export function Header({ title, showBack = false }: { title: string, showBack?: 
   };
   
   return (
-    <header className="w-full pt-[env(safe-area-inset-top,44px)] px-4 pb-4 flex items-center justify-between border-b border-white/10 bg-black/30 backdrop-blur-sm sticky top-0 z-50">
-      <div className="flex items-center gap-3 min-h-[44px]">
-        {showBack && (
-          <button 
-            onClick={handleBack} 
-            className="text-muted-foreground hover:text-primary transition-colors p-2 -ml-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
-            data-testid="button-back"
-          >
-            <ChevronLeft className="w-6 h-6" />
-          </button>
-        )}
-        <h1 className="text-xl font-serif font-bold text-primary tracking-wide drop-shadow-sm">{title}</h1>
-      </div>
-    </header>
+    <>
+      <SafeAreaTop />
+      <header className="w-full px-4 py-3 flex items-center justify-between border-b border-white/10 bg-black/30 backdrop-blur-sm sticky top-0 z-50">
+        <div className="flex items-center gap-3 min-h-[44px]">
+          {showBack && (
+            <button 
+              onClick={handleBack} 
+              className="text-muted-foreground hover:text-primary transition-colors p-2 -ml-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
+              data-testid="button-back"
+            >
+              <ChevronLeft className="w-6 h-6" />
+            </button>
+          )}
+          <h1 className="text-xl font-serif font-bold text-primary tracking-wide drop-shadow-sm">{title}</h1>
+        </div>
+      </header>
+    </>
   );
 }

@@ -2,7 +2,7 @@ import { useStore } from "@/lib/store";
 import { Layout, Header } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
-import { Gamepad2, Trophy, Calendar, ChevronRight } from "lucide-react";
+import { Gamepad2, Calendar, ChevronRight } from "lucide-react";
 import { format } from "date-fns";
 
 export default function History() {
@@ -26,7 +26,7 @@ export default function History() {
                 resumeGame(game.id);
                 setLocation("/game");
               }}
-              className="bg-card p-4 rounded-lg border border-white/10 hover:bg-white/5 active:scale-[0.98] transition-all cursor-pointer group"
+              className="bg-card p-4 rounded-lg border border-white/10 hover:bg-white/5 active:scale-[0.98] transition-all cursor-pointer group min-h-[80px]"
               data-testid={`history-game-${idx}`}
             >
               <div className="flex justify-between items-start mb-2">

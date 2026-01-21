@@ -1,4 +1,4 @@
-import { Layout } from "@/components/layout";
+import { Layout, SafeAreaTop } from "@/components/layout";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useLocation } from "wouter";
 import { ChevronLeft } from "lucide-react";
@@ -16,7 +16,8 @@ export default function Rules() {
 
   return (
     <Layout>
-      <header className="px-4 pb-4 pt-[env(safe-area-inset-top,44px)] border-b border-white/10 flex items-center gap-2 sticky top-0 bg-black/30 backdrop-blur-sm z-50">
+      <SafeAreaTop />
+      <header className="px-4 py-3 border-b border-white/10 flex items-center gap-2 sticky top-0 bg-black/30 backdrop-blur-sm z-50">
         <button 
           onClick={handleBack} 
           className="text-muted-foreground hover:text-primary p-2 -ml-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
