@@ -1,0 +1,24 @@
+<!-- 
+  Add this UIApplicationSceneManifest section to your ios/App/App/Info.plist
+  This enables the modern UIScene lifecycle (iOS 13+)
+  
+  Add this AFTER the existing entries in the <dict> section:
+-->
+
+<key>UIApplicationSceneManifest</key>
+<dict>
+    <key>UIApplicationSupportsMultipleScenes</key>
+    <false/>
+    <key>UISceneConfigurations</key>
+    <dict>
+        <key>UIWindowSceneSessionRoleApplication</key>
+        <array>
+            <dict>
+                <key>UISceneConfigurationName</key>
+                <string>Default Configuration</string>
+                <key>UISceneDelegateClassName</key>
+                <string>$(PRODUCT_MODULE_NAME).SceneDelegate</string>
+            </dict>
+        </array>
+    </dict>
+</dict>
