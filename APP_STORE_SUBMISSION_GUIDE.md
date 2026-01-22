@@ -8,7 +8,10 @@ The following has been completed and is ready:
 |------|--------|----------|
 | App code & functionality | ✅ Complete | `client/src/` |
 | PWA manifest | ✅ Complete | `client/public/manifest.json` |
-| App icons (192px, 512px) | ✅ Complete | `client/public/icon-*.png` |
+| App icons (192px, 512px, 1024px) | ✅ Complete | `client/public/icon-*.png` |
+| iOS UIScene lifecycle fix | ✅ Complete | `ios-setup/` |
+| iOS asset catalog template | ✅ Complete | `ios-setup/Assets.xcassets/` |
+| Icon generation script | ✅ Complete | `ios-setup/generate-icons.sh` |
 | iOS meta tags | ✅ Complete | `client/index.html` |
 | Error handling | ✅ Complete | `client/src/components/error-boundary.tsx` |
 | Offline support | ✅ Complete | LocalStorage persistence |
@@ -92,8 +95,25 @@ The following has been completed and is ready:
    npx cap sync ios
    ```
 
-4. **Open the iOS project in Xcode**
+4. **Apply UIScene Lifecycle Fix (IMPORTANT - iOS 26.x)**
    ```bash
+   # Copy the scene-based lifecycle files
+   cp ios-setup/AppDelegate.swift ios/App/App/AppDelegate.swift
+   cp ios-setup/SceneDelegate.swift ios/App/App/SceneDelegate.swift
+   ```
+   Then add the UIApplicationSceneManifest to `ios/App/App/Info.plist` (see `ios-setup/README.md` for exact XML)
+
+5. **Generate and apply app icons**
+   ```bash
+   cd ios-setup
+   ./generate-icons.sh
+   cd ..
+   cp -R ios-setup/Assets.xcassets ios/App/App/
+   ```
+
+6. **Sync again and open in Xcode**
+   ```bash
+   npx cap sync ios
    npx cap open ios
    ```
 
@@ -122,11 +142,10 @@ The following has been completed and is ready:
    - Under "General" → "Minimum Deployments"
    - Set iOS version to `15.0` (covers most iPhones in use)
 
-6. **Configure App Icons**
+6. **Verify App Icons**
    - In the left sidebar, expand your project and click "Assets"
-   - Click "AppIcon"
-   - Drag the icon images from `client/public/` into the appropriate slots
-   - Or use a tool like https://appicon.co to generate all sizes from `icon-512.png`
+   - Click "AppIcon" - all icon slots should be filled (if you ran the generate-icons.sh script)
+   - If icons are missing, run `ios-setup/generate-icons.sh` and copy the assets folder again
 
 7. **Set the App Orientation**
    - Under "General" → "Deployment Info"
@@ -386,12 +405,21 @@ Apple will review your app. You'll receive an email when:
 Your Replit Project
 ├── client/
 │   ├── public/
-│   │   ├── icon-192.png          ← App icon (small)
-│   │   ├── icon-512.png          ← App icon (large)
+│   │   ├── icon-192.png          ← App icon (PWA)
+│   │   ├── icon-512.png          ← App icon (PWA)
+│   │   ├── icon-1024.png         ← App Store icon source
+│   │   ├── apple-touch-icon.png  ← iOS home screen icon
 │   │   └── manifest.json         ← PWA configuration
 │   ├── src/                      ← All app source code
 │   └── index.html                ← iOS meta tags configured
-├── APP_STORE_README.md           ← Technical documentation
+├── ios-setup/
+│   ├── AppDelegate.swift         ← UIScene lifecycle AppDelegate
+│   ├── SceneDelegate.swift       ← UIScene lifecycle SceneDelegate
+│   ├── Info.plist.patch          ← UISceneManifest XML to add
+│   ├── generate-icons.sh         ← Icon generation script
+│   ├── Assets.xcassets/          ← Complete iOS asset catalog
+│   └── README.md                 ← Detailed setup instructions
+├── capacitor.config.json         ← Capacitor configuration
 ├── APP_STORE_SUBMISSION_GUIDE.md ← This file
 └── PRIVACY_POLICY.md             ← Privacy policy template
 ```
