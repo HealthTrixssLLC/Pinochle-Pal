@@ -1,0 +1,169 @@
+Below are the two Change Requests, updated to explicitly reflect **iPhone 17 Pro on iOS 26.x**. I also completed the second CR for the **icon not rendering** issue. You can paste these directly into Replit, Jira, or GitHub Issues.
+
+## CR 1 Fix iOS WebView runtime errors and UIScene lifecycle warning on iPhone 17 Pro iOS 26.x
+
+Title
+CR Fix iOS 26.x Capacitor WebView runtime errors and adopt UIScene lifecycle for Pinochle Pal on iPhone 17 Pro
+
+Request type
+Change Request
+
+Priority
+High
+
+Owner
+Replit engineering
+
+Repository
+HealthTrixssLLC Pinochle Pal
+
+Summary
+When running the iOS build on a physical iPhone 17 Pro on iOS 26.x via Xcode, the app launches and loads capacitor://localhost, but Xcode console emits multiple runtime errors, including a UIScene lifecycle warning and a sandbox extension creation failure, plus repeated WebContent rendering and environment context failures. We need root cause analysis and a fix or mitigation to ensure stability and App Store submission readiness on iOS 26.x.
+
+Environment
+1 Device: iPhone 17 Pro
+2 iOS: 26.x
+3 Host: macOS, Xcode version to be captured by Replit engineer
+4 Runtime: Capacitor iOS WebView
+
+Build steps used
+1 npm install
+2 npm run build
+3 npx cap sync ios
+4 Open ios/App/App.xcworkspace
+5 Run to connected iPhone 17 Pro
+
+Observed console output
+1 UIScene lifecycle will soon be required. Failure to adopt will result in an assert in the future.
+2 Could not create a sandbox extension for the app bundle path
+3 Loading app at capacitor://localhost
+4 NSMapGet map table argument is NULL
+5 WebContent could not register system wide server: -25204
+6 WebContent accessibility cache warnings
+7 WebContent unable to hide query parameters from script missing data
+8 WebView loaded
+9 WebContent CARenderServer failed bootstrap look up invalid address
+10 WebContent failed to initialize application environment context
+11 WebContent failed to load a device context
+
+Business impact
+1 Increases risk for App Store submission readiness and long term compatibility on iOS 26.x and future SDKs
+2 Potential for intermittent blank screen, rendering instability, or performance degradation on device
+3 Creates uncertainty for release QA sign off due to console errors during launch and runtime
+
+Reproduction steps
+1 Clone repo
+2 npm install
+3 npm run build
+4 npx cap sync ios
+5 Open ios/App/App.xcworkspace
+6 Select physical iPhone 17 Pro running iOS 26.x as target
+7 Run
+8 Observe Xcode console logs during app launch and WebView load
+
+Expected result
+1 Clean console output with no sandbox extension failure and no repeated WebContent environment or device context failures
+2 App initializes reliably on physical device on iOS 26.x
+3 UIScene lifecycle warning removed by adopting scene based lifecycle properly
+
+Actual result
+App launches but emits the errors listed above in the console
+
+Scope
+1 Investigate and resolve the sandbox extension failure and repeated WebContent failures on iOS 26.x
+2 Implement UIScene lifecycle adoption using Scene Manifest and SceneDelegate if required
+3 Determine which WebContent logs are benign iOS 26.x noise versus true errors and document the conclusion
+4 Ensure the fix does not regress earlier iOS versions supported by the app
+
+Acceptance criteria
+1 Running on iPhone 17 Pro iOS 26.x produces no sandbox extension failure line
+2 UIScene lifecycle warning is removed via proper scene based configuration
+3 The repeated WebContent failed to initialize application environment context and failed to load a device context lines are eliminated or reduced to a single non recurring benign message with documented rationale
+4 QA validation passes on device for fresh install, cold start, background resume, and rotation behavior if supported
+5 Release build archive run does not present these errors in a way that indicates functional risk
+
+Artifacts needed from Replit during investigation
+1 Output of npm ls @capacitor core @capacitor ios @capacitor cli from repo root
+2 Xcode version and iOS deployment target for the iOS project
+3 capacitor.config file contents and webDir value
+4 Exact device sysdiagnose or Xcode console log capture during repro if needed
+5 Proposed code changes as PR with clear before and after notes and testing steps
+
+Notes
+If this is determined to be benign iOS 26.x WebKit logging, provide a written rationale and evidence that it does not impact App Store review, stability, or production builds. Otherwise deliver a code level fix.
+
+---
+
+## CR 2 Fix app icon not rendering correctly on iPhone 17 Pro iOS 26.x
+
+Title
+CR Fix iOS app icon not rendering correctly for Pinochle Pal on iPhone 17 Pro iOS 26.x
+
+Request type
+Change Request
+
+Priority
+High
+
+Owner
+Replit engineering
+
+Repository
+HealthTrixssLLC Pinochle Pal
+
+Summary
+The app icon is not rendering correctly on device. This appears to be an asset catalog or build configuration issue in the iOS target. We need the icon to render consistently on the Home Screen, App Library, Spotlight search, Settings storage list, and when installed through Xcode and TestFlight.
+
+Environment
+1 Device: iPhone 17 Pro
+2 iOS: 26.x
+3 Host: macOS, Xcode version to be captured by Replit engineer
+4 Build type: Debug run via Xcode and Release archive build
+
+Expected result
+The correct app icon renders consistently in all iOS surfaces.
+
+Actual result
+App icon is missing, incorrect, low resolution, blank, or not updating after rebuild. Exact symptom to be confirmed during repro.
+
+Reproduction steps
+1 npm run build
+2 npx cap sync ios
+3 Open ios/App/App.xcworkspace
+4 Run to iPhone 17 Pro iOS 26.x
+5 Observe icon on Home Screen and App Library
+6 Optional: delete app and reinstall to verify caching behavior
+
+Scope
+1 Ensure AppIcon asset set is complete and valid for iOS 26.x
+2 Ensure the correct asset catalog is referenced by the App target
+3 Ensure CFBundleIconName is set correctly and matches the AppIcon name
+4 Ensure icons persist and update reliably after sync and rebuild cycles
+5 Confirm that release archive and TestFlight builds show correct icon, not just debug builds
+
+Investigation checklist for Replit
+1 Verify ios/App/App/Assets.xcassets contains AppIcon.appiconset with all required sizes and idioms
+2 Verify the App target General section uses the correct App Icons Source
+3 Verify Info.plist includes CFBundleIconName if required and is not overridden by build settings
+4 Confirm there is no duplicated asset catalog or multiple AppIcon sets causing ambiguous selection
+5 Confirm Capacitor asset pipeline is not overwriting icons during cap sync or build steps
+6 Validate the icon PNG source properties
+1 Correct square aspect ratio
+2 No transparency where prohibited
+3 Sufficient resolution for 1024 by 1024 marketing icon
+
+Acceptance criteria
+1 Icon renders correctly on iPhone 17 Pro iOS 26.x on Home Screen, App Library, Spotlight, and Settings
+2 Icon remains correct after uninstall reinstall, reboot, and reinstall via Xcode
+3 Icon remains correct in a Release archive build and TestFlight build
+4 Documentation added to the repo describing the canonical icon source file, how to regenerate, and how to verify quickly
+
+Artifacts needed from Replit during investigation
+1 Screenshot of Assets.xcassets AppIcon contents showing all required entries
+2 Screenshot of App target settings showing correct App Icons Source
+3 Confirmation of the icon source file path used to generate the asset set
+4 PR containing changes and a short verification checklist
+
+---
+
+If you want these in a specific format for your tracker, tell me which system you are using for CR intake (Replit internal, Jira, GitHub Issues) and I will reshape the fields to match the exact template your team uses.
