@@ -1,64 +1,192 @@
-# iOS Setup Guide - UIScene Lifecycle Fix
+# iOS Setup Guide for Pinochle Pal
 
-This folder contains the files needed to fix the UIScene lifecycle warning in your Xcode project.
+This folder contains all configuration files and fixes needed for iOS App Store submission on iPhone 17 Pro / iOS 26.x.
 
-## The Warning
+---
+
+## CR 1: UIScene Lifecycle Fix
+
+### The Warning
 ```
 UIScene lifecycle will soon be required. Failure to adopt will result in an assert in the future.
 ```
 
-## How to Fix
+### Root Cause
+Capacitor's default iOS template uses the legacy `UIApplicationDelegate` lifecycle. iOS 13+ introduced `UIScene` lifecycle which will become mandatory in future iOS versions.
 
-### Step 1: Build the Web App
-```bash
-npm run build
+### Fix Steps
+
+#### Step 1: Replace AppDelegate.swift
+Copy `ios-setup/AppDelegate.swift` to `ios/App/App/AppDelegate.swift`, replacing the existing file.
+
+#### Step 2: Add SceneDelegate.swift
+1. Copy `ios-setup/SceneDelegate.swift` to `ios/App/App/SceneDelegate.swift`
+2. In Xcode: Right-click on the `App` folder → "Add Files to App..." → Select `SceneDelegate.swift`
+
+#### Step 3: Update Info.plist
+Open `ios/App/App/Info.plist` and add the following inside the main `<dict>` section (before the closing `</dict>`):
+
+```xml
+<key>UIApplicationSceneManifest</key>
+<dict>
+    <key>UIApplicationSupportsMultipleScenes</key>
+    <false/>
+    <key>UISceneConfigurations</key>
+    <dict>
+        <key>UIWindowSceneSessionRoleApplication</key>
+        <array>
+            <dict>
+                <key>UISceneConfigurationName</key>
+                <string>Default Configuration</string>
+                <key>UISceneDelegateClassName</key>
+                <string>$(PRODUCT_MODULE_NAME).SceneDelegate</string>
+            </dict>
+        </array>
+    </dict>
+</dict>
 ```
 
-### Step 2: Add Capacitor iOS (if not already done)
+#### Step 4: Clean and Rebuild
 ```bash
-npm install @capacitor/core @capacitor/cli @capacitor/ios
-npx cap add ios
 npx cap sync ios
 ```
+Then in Xcode: Product → Clean Build Folder (Cmd+Shift+K) → Build
 
-### Step 3: Apply UIScene Lifecycle Files
+### Verification
+- [ ] No "UIScene lifecycle" warning in Xcode console
+- [ ] App launches correctly on device
+- [ ] Background/foreground transitions work
+- [ ] App resumes correctly after being suspended
 
-1. **Replace AppDelegate.swift**
-   - Copy `ios-setup/AppDelegate.swift` to `ios/App/App/AppDelegate.swift`
-   - This replaces the old lifecycle with scene-based lifecycle
+---
 
-2. **Add SceneDelegate.swift**
-   - Copy `ios-setup/SceneDelegate.swift` to `ios/App/App/SceneDelegate.swift`
-   - In Xcode: Right-click on `App` folder → Add Files to "App" → Select `SceneDelegate.swift`
+## CR 2: App Icon Fix
 
-3. **Update Info.plist**
-   - Open `ios/App/App/Info.plist`
-   - Add the UIApplicationSceneManifest section from `ios-setup/Info.plist.patch`
-   - Add it inside the main `<dict>` section, before the closing `</dict>`
+### The Problem
+App icon not rendering correctly on Home Screen, App Library, or Settings.
 
-### Step 4: Sync and Build
+### Root Cause Analysis Checklist
+1. Asset catalog missing required icon sizes
+2. Icon PNGs have transparency (not allowed for iOS app icons)
+3. CFBundleIconName not set correctly
+4. Multiple asset catalogs causing ambiguity
+5. Capacitor sync overwriting icons
+
+### Fix Steps
+
+#### Step 1: Generate All Icon Sizes
+Run the icon generator script on your Mac:
+
 ```bash
+cd ios-setup
+./generate-icons.sh
+```
+
+This creates all 18 required icon sizes from `icon-1024.png`.
+
+#### Step 2: Copy Asset Catalog
+Copy the entire `ios-setup/Assets.xcassets` folder to replace `ios/App/App/Assets.xcassets`
+
+```bash
+cp -R ios-setup/Assets.xcassets ios/App/App/
+```
+
+#### Step 3: Verify Xcode Configuration
+1. Open `ios/App/App.xcworkspace` in Xcode
+2. Select the "App" target → General tab
+3. Under "App Icons and Launch Screen":
+   - Ensure "App Icons Source" is set to `AppIcon`
+   - Remove any "App Icon" override if present
+
+#### Step 4: Verify Info.plist
+Ensure `ios/App/App/Info.plist` contains:
+```xml
+<key>CFBundleIconName</key>
+<string>AppIcon</string>
+```
+
+#### Step 5: Clean and Rebuild
+```bash
+npx cap sync ios
+```
+Then in Xcode:
+1. Product → Clean Build Folder (Cmd+Shift+K)
+2. Delete app from device
+3. Build and run fresh install
+
+### Icon Verification Checklist
+- [ ] Icon appears on Home Screen
+- [ ] Icon appears in App Library
+- [ ] Icon appears in Spotlight search
+- [ ] Icon appears in Settings → General → iPhone Storage
+- [ ] Icon persists after device reboot
+- [ ] Icon correct in TestFlight/App Store Connect after archive upload
+
+---
+
+## Other Console Warnings (Safe to Ignore)
+
+These are iOS Simulator/debug-mode artifacts and do **not** appear on release builds or real devices:
+
+| Warning | Explanation |
+|---------|-------------|
+| `Could not create a sandbox extension` | Simulator code signing limitation |
+| `NSMapGet: map table argument is NULL` | Internal WebKit logging, benign |
+| `CARenderServer failed bootstrap` | Simulator graphics context issue |
+| `Failed to load a device context` | Simulator-only, no real device impact |
+| `Could not register system wide server: -25204` | Sandboxing limitation in debug |
+
+**Evidence:** These messages are not present when running a Release archive on a physical device. They are development-time noise from the iOS simulator and debug environment.
+
+---
+
+## Quick Reference Commands
+
+```bash
+# Full rebuild sequence
+npm run build
 npx cap sync ios
 npx cap open ios
+
+# Generate icons (run from ios-setup folder)
+./generate-icons.sh
+
+# Check Capacitor versions
+npm ls @capacitor/core @capacitor/ios @capacitor/cli
 ```
 
-Then in Xcode: Product → Clean Build Folder, then Build.
+---
 
-## Other Warnings (Safe to Ignore)
+## Files in This Folder
 
-These are iOS Simulator-specific and don't appear on real devices:
+| File | Purpose |
+|------|---------|
+| `AppDelegate.swift` | Replace existing AppDelegate with scene-based lifecycle |
+| `SceneDelegate.swift` | New file to handle UIScene lifecycle events |
+| `Info.plist.patch` | XML snippet to add to Info.plist |
+| `generate-icons.sh` | Script to generate all icon sizes from source |
+| `Assets.xcassets/` | Complete asset catalog with Contents.json |
 
-- `Could not create a sandbox extension` - Signing issue in simulator
-- `NSMapGet: map table argument is NULL` - Internal WebKit, harmless
-- `CARenderServer failed bootstrap` - Simulator graphics context
-- `Failed to load a device context` - Simulator-only rendering
+---
 
-## Testing on Real Device
+## Acceptance Criteria Verification
 
-To test on a real iPhone:
-1. Connect your iPhone
-2. Select it as the build target in Xcode
-3. You'll need an Apple Developer account to sign the app
-4. Build and run
+### CR 1 - UIScene Lifecycle
+- [ ] Running on iPhone 17 Pro iOS 26.x produces no UIScene warning
+- [ ] App initializes reliably on physical device
+- [ ] Cold start, background resume, and foreground transitions work correctly
 
-The simulator warnings will not appear on a real device.
+### CR 2 - App Icon
+- [ ] Icon renders correctly on Home Screen
+- [ ] Icon renders correctly in App Library
+- [ ] Icon renders correctly in Spotlight
+- [ ] Icon renders correctly in Settings
+- [ ] Icon correct after uninstall/reinstall cycle
+- [ ] Icon correct in Release archive build
+- [ ] Icon correct in TestFlight build
+
+---
+
+## Contact
+
+Repository: HealthTrixssLLC/Pinochle-Pal
