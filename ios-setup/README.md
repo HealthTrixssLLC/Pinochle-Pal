@@ -74,17 +74,17 @@ App icon not rendering correctly on Home Screen, App Library, or Settings.
 
 ### Fix Steps
 
-#### Step 1: Generate All Icon Sizes
-Run the icon generator script on your Mac:
+#### Step 1: Copy Pre-Generated Icons
+All 18 icon sizes are **already generated** in this folder. Simply copy them:
 
 ```bash
-cd ios-setup
-./generate-icons.sh
+rm -rf ios/App/App/Assets.xcassets
+cp -R ios-setup/Assets.xcassets ios/App/App/
 ```
 
-This creates all 18 required icon sizes from `icon-1024.png`.
+(Optional: If you want to regenerate from a different source icon, run `./generate-icons.sh`)
 
-#### Step 2: Copy Asset Catalog
+#### Step 2: Verify Asset Catalog
 Copy the entire `ios-setup/Assets.xcassets` folder to replace `ios/App/App/Assets.xcassets`
 
 ```bash
