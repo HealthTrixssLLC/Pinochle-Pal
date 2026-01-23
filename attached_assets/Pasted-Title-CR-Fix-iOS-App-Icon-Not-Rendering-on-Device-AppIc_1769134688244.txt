@@ -1,0 +1,101 @@
+Title
+CR Fix iOS App Icon Not Rendering on Device, AppIcon Asset Catalog Incomplete and Not Updated by Capacitor Assets Generation
+
+Request type
+Change Request
+
+Priority
+High
+
+Owner
+Replit engineering
+
+Repository
+HealthTrixssLLC Pinochle Pal
+
+Environment
+Device: iPhone 17 Pro
+iOS: 26.x
+Build path: Xcode run to physical device
+iOS project type: Xcode project only (no xcworkspace, no CocoaPods)
+
+Summary
+The app icon does not render on the device after install/run from Xcode. The iOS asset catalog exists but the AppIcon set is incomplete and appears stale. Capacitor assets generation either writes to a different location than the Xcode target uses or is being overwritten by the project’s build/sync workflow. Replit needs to correct the icon pipeline so a complete AppIcon set is present in the actual iOS target asset catalog and is used by Xcode builds.
+
+Evidence and current state
+
+1. iOS project path in repo: `ios/App/App.xcodeproj` (no `Podfile`, no `Pods`, no `.xcworkspace`)
+2. Asset catalog exists at: `ios/App/App/Assets.xcassets`
+3. AppIcon set exists at: `ios/App/App/Assets.xcassets/AppIcon.appiconset`
+4. AppIcon set contents are incomplete and stale
+
+   * Only one PNG present: `AppIcon-512@2x.png`
+   * AppIcon files timestamped Jan 13, not updated by recent work
+5. Source icons exist in repo and are correct sizes
+
+   * `client/public/icon-1024.png`
+   * `client/public/icon-512.png`
+   * `client/public/icon-192.png`
+6. Running `npx @capacitor/assets generate --ios` originally failed due to missing default asset directory, requiring `--asset-path`
+7. After generating, the AppIcon set inside `ios/App/App/Assets.xcassets` is still not updated and icon still does not render on device
+
+Business impact
+
+1. App Store submission readiness risk, including metadata and packaging requirements
+2. Brand and user trust impact due to missing icon on home screen and app library
+3. Wasted engineering and QA cycles due to inconsistent asset pipeline
+
+Reproduction steps
+
+1. Clone repo `HealthTrixssLLC/Pinochle-Pal`
+2. npm install
+3. npm run build
+4. npx cap sync ios
+5. Open `ios/App/App.xcodeproj` in Xcode
+6. Run to physical device (iPhone 17 Pro iOS 26.x)
+7. Observe app icon missing or not rendered correctly on the device
+
+Attempted remediation steps and outcomes
+
+1. Created local assets input folder and ran
+
+   * `npx @capacitor/assets generate --ios --asset-path ./assets`
+2. Confirmed Asset catalog exists, but AppIcon set remains unchanged and incomplete
+3. Deleted app from device, cleaned build folder, cleared DerivedData, reinstalled
+4. Icon still not rendering
+
+Expected result
+
+1. A complete iOS AppIcon set is generated and included in the build
+2. The correct icon displays reliably on device after installation, across Home Screen, App Library, Spotlight, and Settings
+3. Rebuild and resync does not revert icon assets to stale versions
+
+Root cause hypotheses to investigate
+
+1. `@capacitor/assets generate` is writing to a different AppIcon location than the Xcode target uses
+2. A repo script or sync step overwrites `ios/App/App/Assets.xcassets` with older assets (possible due to presence of `ios-setup/Assets.xcassets`)
+3. Xcode target build settings are not pointing at `AppIcon` or asset catalog target membership is incorrect
+4. Icon source image has an alpha channel or invalid properties causing iOS fallback behavior
+
+Scope
+
+1. Standardize the canonical icon source location in repo
+2. Ensure `@capacitor/assets` writes into the actual Xcode target asset catalog used at build time
+3. Ensure build and sync steps do not overwrite the generated AppIcon set
+4. Ensure Xcode target references the correct AppIcon set name
+5. Document the correct workflow for regenerating icons
+
+Acceptance criteria
+
+1. `ios/App/App/Assets.xcassets/AppIcon.appiconset` contains a complete set of required icon PNGs (not a single file) and a correct `Contents.json`
+2. Running the documented icon generation command updates the AppIcon set timestamps and contents in the correct directory
+3. Building and running to iPhone 17 Pro iOS 26.x displays the correct icon consistently
+4. A clean uninstall/reinstall and device reboot does not cause the icon to disappear or revert
+5. Rebuild and `npx cap sync ios` does not revert the icon to older assets
+6. Documentation added to repo describing exact commands and source files to regenerate iOS icons
+
+Deliverables
+
+1. PR with changes to fix the icon pipeline and any scripts that overwrite assets
+2. A short runbook in repo for icon generation and verification
+3. Verification notes including on device test confirming icon rendering on iPhone 17 Pro iOS 26.x
