@@ -4,93 +4,67 @@
 
 ## Introduction
 
-Pinochle Scorekeeper ("we", "our", or "the app") is committed to protecting your privacy. This Privacy Policy explains how we handle your information when you use our application.
+Pinochle Scorekeeper ("we," "our," or "the app") is committed to protecting your privacy. This Privacy Policy explains how the app handles information when you use it.
 
-## Information We Collect
+## Summary
 
-### Data Stored Locally on Your Device
+Pinochle Scorekeeper does not collect, transmit, or store personal information on our servers. All game data is stored locally on your device.
 
-The app stores the following information locally on your iPhone:
+## Information Stored on Your Device
 
-- **Player Names:** Names you create for tracking player statistics
-- **Game Scores:** Points scored in each round of your games
-- **Game History:** Records of completed and in-progress games
-- **Player Statistics:** Win counts, high scores, and games played
+The app stores the following information locally on your device to provide core functionality:
 
-**Important:** All data is stored exclusively on your device using your browser's local storage. We do not have access to this data, and it is never transmitted to our servers or any third party.
+* **Player Names** (user entered labels)
+* **Game Scores** (points scored in each round)
+* **Game History** (records of completed and in progress games)
+* **Player Statistics** (win counts, high scores, and games played)
 
-## How We Use Your Information
+**Important:** This information is stored only on your device (in the app’s local storage within the iOS WebView). We do not have access to this information and it is not transmitted to us or any third party.
 
-The data stored on your device is used solely to:
+## How the App Uses Local Information
 
-- Display your current and past game scores
-- Track player statistics across games
-- Resume interrupted games
-- Provide game analytics and visualizations
+The app uses local information only to:
+
+* Display current and past game scores
+* Track player statistics across games
+* Resume interrupted games
+* Provide in app analytics and visualizations
 
 ## Data Sharing
 
-**We do not share, sell, or transmit your data to anyone.**
+We do not sell, share, or transmit your game data.
 
-Since all data is stored locally on your device:
-- No data is sent to our servers
-- No data is shared with third parties
-- No data is used for advertising or analytics
-- No data leaves your device
+* No game data is sent to our servers
+* No game data is shared with third parties
+* No game data is used for advertising
 
-## Data Security
+## Third Party Services
 
-Your data security is ensured by:
+The app does not use third party services, analytics, tracking, or crash reporting.
 
-- Local storage on your device (under iOS security protections)
-- No network transmission of personal data
-- No server-side storage
-- No third-party access
+## Data Retention and Deletion
 
-## Your Data Rights
+Your game data remains on your device until you remove it.
 
-You have complete control over your data:
+You can delete your local app data by:
 
-- **Access:** All your data is visible within the app
-- **Modification:** You can edit player names and delete games at any time
-- **Deletion:** You can delete all app data by:
-  - Clearing your browser's storage for this app
-  - Deleting and reinstalling the app
-  - Using your device's settings to clear app data
+* Deleting games or resetting data within the app (if available)
+* Deleting the app from your device (this removes the app and its local data)
 
-## Children's Privacy
+## Children’s Privacy
 
-Our app does not collect any personal information from anyone, including children under 13. The app is safe for users of all ages (rated 4+).
-
-## Third-Party Services
-
-### Current Status
-The app currently uses **no third-party services**, analytics, or tracking.
-
-### Future Ad Integration
-If we integrate advertising in the future:
-- We will update this privacy policy beforehand
-- We will only use privacy-compliant ad networks
-- You will have the option to opt out of personalized ads
-- We will notify you of any changes
+We do not knowingly collect personal information from children or any users. The app is intended for general audiences.
 
 ## Changes to This Policy
 
-We may update this Privacy Policy from time to time. We will notify you of any changes by:
-- Posting the new Privacy Policy in the app
-- Updating the "Last Updated" date
-- For significant changes, displaying an in-app notification
+We may update this Privacy Policy from time to time. We will update the "Last Updated" date above and post the updated Privacy Policy within the app.
 
 ## Contact Us
 
 If you have questions about this Privacy Policy, please contact us at:
 
-**Email:** [Your support email]
+Email: **[support@healthtrixss.com](mailto:support@healthtrixss.com)**
 
-## Consent
+## Acknowledgement
 
-By using Pinochle Scorekeeper, you consent to this Privacy Policy.
-
----
-
-**Summary:** Your data stays on your device. We don't collect, transmit, or share anything. You have complete control.
+By using Pinochle Scorekeeper, you acknowledge you have read this Privacy Policy.
