@@ -60,10 +60,6 @@ export default function GameStats() {
       <ScrollArea className="flex-1">
         <div className="p-4 space-y-6 pb-20">
           
-          <div className="w-full h-16 bg-white/5 border border-white/10 border-dashed rounded flex items-center justify-center text-xs text-muted-foreground uppercase tracking-widest" data-testid="ad-placeholder">
-             Ad Space
-          </div>
-
           <Tabs defaultValue="scores">
             <TabsList className="w-full bg-black/20">
                <TabsTrigger value="scores" className="flex-1" data-testid="tab-scores">Scoring</TabsTrigger>

@@ -84,9 +84,6 @@ export default function Home() {
           </Button>
         </div>
 
-        <div className="text-center text-xs text-muted-foreground/50 mt-auto pt-8" data-testid="text-footer">
-          Designed for iPhone
-        </div>
       </div>
     </Layout>
   );
