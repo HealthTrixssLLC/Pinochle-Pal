@@ -32,10 +32,8 @@ export default function Game() {
 
   return (
     <Layout>
-      <header 
-        className="flex items-center justify-between px-4 py-3 bg-black/40 backdrop-blur-sm border-b border-white/10 sticky top-0 z-50"
-        style={{ paddingTop: 'calc(env(safe-area-inset-top, 48px) + 12px)' }}
-      >
+      <div className="w-full shrink-0" style={{ height: 'max(env(safe-area-inset-top, 60px), 60px)' }} />
+      <header className="flex items-center justify-between px-4 py-3 bg-black/40 backdrop-blur-sm border-b border-white/10">
          <Button 
            variant="ghost" 
            size="sm" 
