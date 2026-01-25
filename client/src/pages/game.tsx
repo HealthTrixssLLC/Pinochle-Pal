@@ -1,5 +1,5 @@
 import { useStore } from "@/lib/store";
-import { Layout, SafeAreaTop } from "@/components/layout";
+import { Layout } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { useLocation, Redirect } from "wouter";
 import { Plus, RotateCcw, BarChart3, ChevronLeft } from "lucide-react";
@@ -32,8 +32,10 @@ export default function Game() {
 
   return (
     <Layout>
-      <SafeAreaTop />
-      <header className="flex items-center justify-between px-4 py-3 bg-black/30 backdrop-blur-sm border-b border-white/10 sticky top-0 z-50">
+      <header 
+        className="flex items-center justify-between px-4 py-3 bg-black/40 backdrop-blur-sm border-b border-white/10 sticky top-0 z-50"
+        style={{ paddingTop: 'calc(env(safe-area-inset-top, 48px) + 12px)' }}
+      >
          <Button 
            variant="ghost" 
            size="sm" 
